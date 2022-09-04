@@ -13,8 +13,40 @@ terminal MULT;
 terminal DIV;
 terminal OPEN_BRACKET;
 terminal CLOSE_BRACKET;
+terminal OPEN_CURLY_BRACES;
+terminal CLOSE_CURLY_BRACES;
 terminal INTEGER_CONSTANT;
 terminal IDENTIFIER;
+terminal CONST_STRING;
+terminal FLOAT_CONSTANT;
+//terminal INPUT_CHARACTER;
+
+terminal IF;
+terminal ELSE;
+terminal WHILE;
+terminal INIT;
+terminal WRITE;
+terminal READ;
+terminal NOT;
+terminal AND;
+terminal OR;
+
+terminal COMMENT;
+terminal COMMA;
+terminal COLON;
+terminal SPACE;
+
+terminal FLOAT;
+terminal INT;
+terminal STRING;
+
+
+terminal GREATER_THAN;
+terminal GREATER_OR_EQUAL_THAN;
+terminal LOWER_THAN;
+terminal LOWER_OR_EQUAL_THAN;
+
+terminal WHITESPACE;
 
 // Non Terminals
 non terminal sentence;
@@ -24,8 +56,8 @@ non terminal term;
 non terminal factor;
 
 // Start Symbol Definition
-start with sentence;
-
+start with program;
+program ::= program | sentence;
 sentence ::= assignment {: System.out.println("End"); :};
 assignment ::= IDENTIFIER ASSIG expression {: System.out.println("Assignment"); :};
 expression ::= expression PLUS term {: System.out.println("+"); :};
@@ -37,3 +69,4 @@ term ::= factor {: System.out.println("Term = factor"); :};
 factor ::= IDENTIFIER:id  {: System.out.println("Id: " + id); :};
 factor ::= INTEGER_CONSTANT:constant {: System.out.println("Constant: " + constant ); :};
 factor ::= OPEN_BRACKET expression CLOSE_BRACKET {: System.out.println("Factor = (Expression)"); :};
+
