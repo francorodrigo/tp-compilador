@@ -49,6 +49,7 @@ terminal LOWER_OR_EQUAL_THAN;
 terminal WHITESPACE;
 
 // Non Terminals
+non terminal program;
 non terminal sentence;
 non terminal assignment;
 non terminal expression;
