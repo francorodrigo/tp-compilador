@@ -1,0 +1,30 @@
+init {
+    a, b, c : Int;
+}
+
+do a {
+    case a == b {
+        a = 1;
+    }
+    case b > c {
+        a = 2;
+    }
+    case c > a {
+        a = 3;
+    }
+}
+
+do a {
+    case a == b {
+        a = 1;
+    }
+    case b > c {
+        a = 2;
+    }
+    case c > a {
+        a = 3;
+    }
+    default {
+        a = 4;
+    }
+}

@@ -1,8 +1,18 @@
-a = 1
-b = 1
-c = 2
+init {
+    a, b, c : Int;
+}
 
-if (a > b && c > b)
+if ( a == b )
 {
-    write("a es mas grande que b y c es mas grande que b")
+    a = 1;
+}
+
+
+
+if ( (a > b)  &&  (c > b) )
+{
+    if ( a > b  &&  c > b )
+        {
+            write("a es mas que b y c es mas que b");
+        }
 }

@@ -30,10 +30,14 @@ terminal READ;
 terminal NOT;
 terminal AND;
 terminal OR;
+terminal DO;
+terminal CASE;
+terminal DEFAULT;
 
 terminal COMMENT;
 terminal COMMA;
 terminal COLON;
+terminal SEMI_COLON;
 terminal SPACE;
 
 terminal FLOAT;
@@ -45,29 +49,89 @@ terminal GREATER_THAN;
 terminal GREATER_OR_EQUAL_THAN;
 terminal LOWER_THAN;
 terminal LOWER_OR_EQUAL_THAN;
+terminal EQUALS;
+terminal NOT_EQUALS;
 
 terminal WHITESPACE;
 
 // Non Terminals
+non terminal startRule;
 non terminal program;
+non terminal decVarSection;
+non terminal varFields;
+non terminal varList;
+non terminal dataType;
 non terminal sentence;
 non terminal assignment;
 non terminal expression;
 non terminal term;
 non terminal factor;
+non terminal string;
+non terminal write;
+non terminal read;
+non terminal selection;
+non terminal iteration;
+non terminal conditional;
+non terminal comparison;
+non terminal comparator;
+non terminal case;
+non terminal caseWrapper;
+non terminal defaultCase;
+
 
 // Start Symbol Definition
-start with program;
-program ::= program | sentence;
-sentence ::= assignment {: System.out.println("End"); :};
-assignment ::= IDENTIFIER ASSIG expression {: System.out.println("Assignment"); :};
-expression ::= expression PLUS term {: System.out.println("+"); :};
-expression ::= expression SUB term {: System.out.println("-"); :};
-expression ::= term {: System.out.println("Expression = Term"); :};
-term ::= term MULT factor {: System.out.println("*"); :};
-term ::= term DIV factor {: System.out.println("/"); :};
-term ::= factor {: System.out.println("Term = factor"); :};
-factor ::= IDENTIFIER:id  {: System.out.println("Id: " + id); :};
-factor ::= INTEGER_CONSTANT:constant {: System.out.println("Constant: " + constant ); :};
-factor ::= OPEN_BRACKET expression CLOSE_BRACKET {: System.out.println("Factor = (Expression)"); :};
+start with startRule;
+startRule ::= decVarSection program {: System.out.println("<startRule> => <devVarSection> <program>"); :};
+startRule ::= decVarSection {: System.out.println("<startRule> => <devVarSection>"); :};
+decVarSection ::= INIT OPEN_CURLY_BRACES varFields CLOSE_CURLY_BRACES {: System.out.println("<decVarSection> => INIT OPEN_CURLY_BRACES <varFields> CLOSE_CURLY_BRACES"); :};
+decVarSection ::= INIT OPEN_CURLY_BRACES CLOSE_CURLY_BRACES {: System.out.println("<decVarSection> => INIT OPEN_CURLY_BRACES CLOSE_CURLY_BRACES"); :};
+varFields ::= varFields varList COLON dataType SEMI_COLON {: System.out.println("<varFields> => <varFields> <varList> COLON <dataType> SEMI_COLON"); :};
+varFields ::= varList COLON dataType SEMI_COLON {: System.out.println("<varFields> => <varList> COLON <dataType> SEMI_COLON"); :};
+varList ::= IDENTIFIER | varList COMMA IDENTIFIER {: System.out.println("<varList> => IDENTIFIER | <varList> COMMA IDENTIFIER"); :};
+dataType ::= INT | FLOAT | STRING {: System.out.println("<dataType> => INT | FLOAT | STRING"); :};
+program ::= program sentence {: System.out.println("<program> => <program> <sentence>"); :};
+program ::= sentence {: System.out.println("<program> => <sentence>"); :};
+
+sentence ::= assignment SEMI_COLON {: System.out.println("<sentence> => <assignment> SEMI_COLON"); :};
+sentence ::= write SEMI_COLON {: System.out.println("<sentence> => <write> SEMI_COLON"); :};
+sentence ::= read SEMI_COLON {: System.out.println("<sentence> => <read> SEMI_COLON"); :};
+sentence ::= selection {: System.out.println("<sentence> => <selection>"); :};
+sentence ::= iteration {: System.out.println("<sentence> => <iteration>"); :};
+sentence ::= case {: System.out.println("<sentence> => <case>"); :};
+
+iteration ::= WHILE OPEN_BRACKET conditional CLOSE_BRACKET OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<iteration> ==> WHILE OPEN_BRACKET <conditional> CLOSE_BRACKET OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES"); :};
+selection ::= IF OPEN_BRACKET conditional CLOSE_BRACKET OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES ELSE OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<selection> ==> IF OPEN_BRACKET <conditional> CLOSE_BRACKET OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES ELSE OPEN_CURLU_BRACES <program> CLOSE_CURLY_BRACES"); :};
+selection ::= IF OPEN_BRACKET conditional CLOSE_BRACKET OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<selection> ==> IF OPEN_BRACKET <conditional> CLOSE_BRACKET OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES"); :};
+
+conditional ::= comparison {: System.out.println("<conditional> ==> comparison"); :};
+conditional ::= NOT comparison {: System.out.println("NOT <conditional> ==> comparison"); :};
+conditional ::= conditional AND comparison  {: System.out.println("<conditional> ==> <conditional> AND <comparison>"); :};
+conditional ::= conditional OR comparison   {: System.out.println("<conditional> ==> <conditional> OR <comparison>"); :};
+comparison ::= expression comparator expression {: System.out.println("<comparison> ==> <expression> <comparator> <expression>"); :};
+comparison ::= OPEN_BRACKET expression comparator expression CLOSE_BRACKET {: System.out.println("<comparison> ==> OPEN_BRACKET <expression> <comparator> <expression> CLOSE_BRACKET"); :};
+
+comparator ::= GREATER_THAN:value | GREATER_OR_EQUAL_THAN:value | LOWER_THAN:value | LOWER_OR_EQUAL_THAN:value | EQUALS:value | NOT_EQUALS:value {: System.out.println("<comparator> => GREATER_THAN | GREATER_OR_EQUAL_THAN | LOWER_THAN | LOWER_OR_EQUAL_THAN | NOT_EQUALS: " + value ); :};
+case ::= DO IDENTIFIER OPEN_CURLY_BRACES caseWrapper CLOSE_CURLY_BRACES {: System.out.println("<case> ==> DO IDENTIFIER <caseWrapper> END_DO"); :};
+case ::= DO IDENTIFIER OPEN_CURLY_BRACES caseWrapper  defaultCase CLOSE_CURLY_BRACES {: System.out.println("<case> ==> DO IDENTIFIER OPEN_CURLY_BRACES <caseWrapper>  <defaultCase> CLOSE_CURLY_BRACES"); :};
+caseWrapper ::=  caseWrapper CASE comparison OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<caseWrapper> => <caseWrapper> CASE <comparison>"); :};
+caseWrapper ::= CASE comparison OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<caseWrapper> => CASE <comparison>"); :};
+defaultCase ::= DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<defaultCase> => DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES"); :};
+
+write ::= WRITE OPEN_BRACKET factor CLOSE_BRACKET {: System.out.println("<write> => WRITE OPEN_BRACKET <factor> CLOSE_BRACKET"); :};
+write ::= WRITE OPEN_BRACKET string CLOSE_BRACKET {: System.out.println("<write> => WRITE OPEN_BRACKET <string> CLOSE_BRACKET"); :};
+read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET {: System.out.println("<read> => READ OPEN_BRACKET IDENTIFIER: " + id + " CLOSE_BRACKET"); :};
+
+assignment ::= IDENTIFIER ASSIG expression {: System.out.println("<assignment> => IDENTIFIER ASSIG <expression>"); :};
+assignment ::= IDENTIFIER ASSIG string {: System.out.println("<assignment> => IDENTIFIER ASSIG <string>"); :};
+expression ::= expression PLUS term {: System.out.println("<expression> => <expression> PLUS <term>"); :};
+expression ::= expression SUB term {: System.out.println("<expression> => <expression> SUB <term>"); :};
+expression ::= term {: System.out.println("<expression> => <term>"); :};
+term ::= term MULT factor {: System.out.println("<term> => <term> MULT <factor>"); :};
+term ::= term DIV factor {: System.out.println("<term> => <term> DIV <factor>"); :};
+term ::= factor {: System.out.println("<term> => <factor>"); :};
+factor ::= IDENTIFIER:id  {: System.out.println("<factor> => IDENTIFIER " + id); :};
+factor ::= INTEGER_CONSTANT:constant {: System.out.println("<factor> => INTEGER_CONSTANT " + constant ); :};
+factor ::= FLOAT_CONSTANT:constant {: System.out.println("<factor> => FLOAT_CONSTANT" + constant ); :};
+factor ::= OPEN_BRACKET expression CLOSE_BRACKET {: System.out.println("<factor> => OPEN_BRACKET <expression> CLOSE_BRACKET"); :};
+string ::= CONST_STRING:constant {: System.out.println("<string> => CONST_STRING " + constant); :};
 

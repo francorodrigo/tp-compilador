@@ -1,1 +1,4 @@
+init {
+
+}
 /* Esto es un comentario */

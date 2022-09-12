@@ -69,7 +69,6 @@ Indentation =  [ \t\f]
 Letter = [a-zA-Z]
 Digit = [0-9]
 
-
 //OPERATORS
 Plus = "+"
 Mult = "*"
@@ -80,14 +79,16 @@ GreaterThan = ">"
 GreaterOrEqualThan = ">="
 LowerThan = "<"
 LowerOrEqualThan = "<="
+Equals = "=="
+NotEquals = "!="
 
 OpenBracket = "("
 CloseBracket = ")"
 OpenCurlyBraces = "{"
 CloseCurlyBraces = "}"
 Colon = ":"
-Comma = ";"
-
+SemiColon = ";"
+Comma = ","
 
 If = "if"
 Else = "else"
@@ -98,6 +99,11 @@ Read = "read"
 Not = "👎"
 And = "&&"
 Or = "||"
+
+//Do-Case-EndDo
+Do = "do"
+Case = "case"
+Default = "default"
 
 Comment = \/\*.*\*\/
 
@@ -110,7 +116,7 @@ String = "String"
 
 WhiteSpace = {LineTerminator} | {Indentation}
 Identifier = {Letter}({Letter}|{Digit})*
-IntegerConstant = {Digit}+
+IntegerConstant = -?{Digit}+
 ConstString = \"[^\"]*\"
 FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
 
@@ -131,11 +137,14 @@ FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
   {GreaterOrEqualThan}                      { System.out.println("Mayor o igual a: " + yytext()); return symbol(ParserSym.GREATER_OR_EQUAL_THAN); }
   {LowerThan}                            	{ System.out.println("Menor a: " + yytext()); return symbol(ParserSym.LOWER_THAN); }
   {LowerOrEqualThan}                        { System.out.println("Menor o igual a: " + yytext()); return symbol(ParserSym.LOWER_OR_EQUAL_THAN); }
+  {Equals}                                  { System.out.println("Igual a: " + yytext()); return symbol(ParserSym.EQUALS); }
+  {NotEquals}                               { System.out.println("No igual a: " + yytext()); return symbol(ParserSym.NOT_EQUALS); }
   {OpenBracket}                             { System.out.println("Parentesis de apertura: " + yytext()); return symbol(ParserSym.OPEN_BRACKET); }
   {CloseBracket}                            { System.out.println("Parentesis de Cierre: " + yytext()); return symbol(ParserSym.CLOSE_BRACKET); }
   //{InputCharacter}                          { System.out.println("Caracter de ingreso: " + yytext()); return symbol(ParserSym.INPUT_CHARACTER); }
   {OpenCurlyBraces}                         { System.out.println("Caracter {: " + yytext()); return symbol(ParserSym.OPEN_CURLY_BRACES); }
   {CloseCurlyBraces}                        { System.out.println("Caracter }: " + yytext()); return symbol(ParserSym.CLOSE_CURLY_BRACES); }
+  {SemiColon}                               { System.out.println("Punto y coma: " + yytext()); return symbol(ParserSym.SEMI_COLON); }
   {Comma}                                   { System.out.println("Coma: " + yytext()); return symbol(ParserSym.COMMA); }
   {Colon}                                   { System.out.println("Dos puntos: " + yytext()); return symbol(ParserSym.COLON); }
   {If}                                      { System.out.println("If: " + yytext()); return symbol(ParserSym.IF); }
@@ -147,6 +156,9 @@ FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
   {Init}                                    { System.out.println("Init: " + yytext()); return symbol(ParserSym.INIT); }
   {Read}                                    { System.out.println("Read: " + yytext()); return symbol(ParserSym.READ); }
   {Write}                                   { System.out.println("Write: " + yytext()); return symbol(ParserSym.WRITE); }
+  {Do}                                      { System.out.println("Do: " + yytext()); return symbol(ParserSym.DO); }
+  {Default}                                 { System.out.println("Default: " + yytext()); return symbol(ParserSym.DEFAULT); }
+  {Case}                                    { System.out.println("Case: " + yytext()); return symbol(ParserSym.CASE); }
 
   /* Types */
   {Int}                                     { System.out.println("Palabra Reservada Int: " + yytext()); return symbol(ParserSym.INT); }
@@ -155,9 +167,9 @@ FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
   /* identifiers */
   {Identifier}                              { validateIdLength(); System.out.println("Identificador: " + yytext()); return symbol(ParserSym.IDENTIFIER, yytext()); }
   /* Constants */
-  {IntegerConstant}                         { validateIntegerLength(); System.out.println("Constante Entera: " + yytext()); return symbol(ParserSym.INTEGER_CONSTANT); }
-  {ConstString}                             { validateStringLength(); System.out.println("Constante String: " + yytext()); symbol(ParserSym.CONST_STRING, yytext()); }
-  {FloatConstant}                           { validateFloatLength(); System.out.println("Constante Flotante: " + yytext()); return symbol(ParserSym.FLOAT_CONSTANT); }
+  {IntegerConstant}                         { validateIntegerLength(); System.out.println("Constante Entera: " + yytext()); return symbol(ParserSym.INTEGER_CONSTANT, yytext()); }
+  {ConstString}                             { validateStringLength(); System.out.println("Constante String: " + yytext()); return symbol(ParserSym.CONST_STRING, yytext()); }
+  {FloatConstant}                           { validateFloatLength(); System.out.println("Constante Flotante: " + yytext()); return symbol(ParserSym.FLOAT_CONSTANT, yytext()); }
 
   /* whitespace */
   {WhiteSpace}                              { /* ignore */ }

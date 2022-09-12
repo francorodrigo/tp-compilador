@@ -1,8 +1,8 @@
-a = 1
-b = 1
-c = 2
+init {
+    a, b, c : Int;
+}
 
-if (not a > b)
+if (👎 a > b)
 {
-    write("a no es mas grande que b")
+    write("a no es mas grande que b");
 }

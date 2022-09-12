@@ -1,1 +1,4 @@
-read(base) /* base es una variable */
+init {
+    a : Int;
+}
+read(a); /* base es una variable */

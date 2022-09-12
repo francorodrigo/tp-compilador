@@ -1,2 +1,7 @@
-write(“ewr”)  /* “ewr” es una cte string */
-write(var1)  /* var1 es una variable numérica definida previamente */
+init {
+    var1 : Int;
+}
+write("ewr");  /* “ewr” es una cte string */
+write(2);  /* 2 es una cte int */
+write((2 + 2));  /* 2+2 es una expresion */
+write(var1);  /* var1 es una variable numérica definida previamente */

@@ -13,12 +13,12 @@ import java.nio.charset.StandardCharsets;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Disabled
+
 public class ParserTest {
 
     @Test
     public void assignmentWithExpression() throws Exception {
-        compilationSuccessful("c=d*(e-21)/4");
+        compilationSuccessful("init { c, d , e : Int; }  c = 1;");
     }
 
     @Test
@@ -74,6 +74,11 @@ public class ParserTest {
     @Test
     void whileStatement() throws Exception {
         compilationSuccessful(readFromFile("while.txt"));
+    }
+
+    @Test
+    void caseStatement() throws Exception {
+        compilationSuccessful(readFromFile("case.txt"));
     }
 
 
