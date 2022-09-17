@@ -1,0 +1,5 @@
+init {
+    a, w, b, d, e, f: Int;
+}
+
+a = #Iguales ( a+w/b, [(d - 3) * 2,e,f] );

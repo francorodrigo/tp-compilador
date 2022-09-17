@@ -13,13 +13,14 @@ terminal MULT;
 terminal DIV;
 terminal OPEN_BRACKET;
 terminal CLOSE_BRACKET;
+terminal OPEN_SQUARE_BRACKET;
+terminal CLOSE_SQUARE_BRACKET;
 terminal OPEN_CURLY_BRACES;
 terminal CLOSE_CURLY_BRACES;
 terminal INTEGER_CONSTANT;
 terminal IDENTIFIER;
 terminal CONST_STRING;
 terminal FLOAT_CONSTANT;
-//terminal INPUT_CHARACTER;
 
 terminal IF;
 terminal ELSE;
@@ -33,12 +34,11 @@ terminal OR;
 terminal DO;
 terminal CASE;
 terminal DEFAULT;
+terminal IGUALES;
 
-terminal COMMENT;
 terminal COMMA;
 terminal COLON;
 terminal SEMI_COLON;
-terminal SPACE;
 
 terminal FLOAT;
 terminal INT;
@@ -51,8 +51,6 @@ terminal LOWER_THAN;
 terminal LOWER_OR_EQUAL_THAN;
 terminal EQUALS;
 terminal NOT_EQUALS;
-
-terminal WHITESPACE;
 
 // Non Terminals
 non terminal startRule;
@@ -77,6 +75,8 @@ non terminal comparator;
 non terminal case;
 non terminal caseWrapper;
 non terminal defaultCase;
+non terminal iguales;
+non terminal expressionList;
 
 
 // Start Symbol Definition
@@ -117,6 +117,10 @@ caseWrapper ::=  caseWrapper CASE comparison OPEN_CURLY_BRACES program CLOSE_CUR
 caseWrapper ::= CASE comparison OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<caseWrapper> => CASE <comparison>"); :};
 defaultCase ::= DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<defaultCase> => DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES"); :};
 
+iguales ::= IGUALES OPEN_BRACKET expression COMMA OPEN_SQUARE_BRACKET expressionList CLOSE_SQUARE_BRACKET CLOSE_BRACKET {:  System.out.println("<iguales> => IGUALES OPEN_BRACKET <expression> COMMA OPEN_SQUARE_BRACKET <expressionList> CLOSE_SQUARE_BRACKET CLOSE_BRACKET"); :};
+expressionList::= expression {: System.out.println("<expressionList> ==> <expression>"); :};
+expressionList::= expressionList COMMA expression {: System.out.println("<expressionList> ==> <expressionList> COMMA <expression>"); :};
+
 write ::= WRITE OPEN_BRACKET factor CLOSE_BRACKET {: System.out.println("<write> => WRITE OPEN_BRACKET <factor> CLOSE_BRACKET"); :};
 write ::= WRITE OPEN_BRACKET string CLOSE_BRACKET {: System.out.println("<write> => WRITE OPEN_BRACKET <string> CLOSE_BRACKET"); :};
 read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET {: System.out.println("<read> => READ OPEN_BRACKET IDENTIFIER: " + id + " CLOSE_BRACKET"); :};
@@ -133,5 +137,6 @@ factor ::= IDENTIFIER:id  {: System.out.println("<factor> => IDENTIFIER " + id);
 factor ::= INTEGER_CONSTANT:constant {: System.out.println("<factor> => INTEGER_CONSTANT " + constant ); :};
 factor ::= FLOAT_CONSTANT:constant {: System.out.println("<factor> => FLOAT_CONSTANT" + constant ); :};
 factor ::= OPEN_BRACKET expression CLOSE_BRACKET {: System.out.println("<factor> => OPEN_BRACKET <expression> CLOSE_BRACKET"); :};
+factor ::= iguales {: System.out.println("<factor> => <iguales>");:};
 string ::= CONST_STRING:constant {: System.out.println("<string> => CONST_STRING " + constant); :};
 

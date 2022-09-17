@@ -2,9 +2,10 @@ package lyc.compiler;
 
 import java_cup.runtime.Symbol;
 import lyc.compiler.ParserSym;
-import lyc.compiler.model.*;
+import lyc.compiler.files.SymbolTableGenerator;import lyc.compiler.model.*;
 import javax.xml.transform.stream.StreamSource;
 import static lyc.compiler.constants.Constants.*;
+import lyc.compiler.files.SymbolTableGenerator.*;
 
 %%
 
@@ -84,6 +85,8 @@ NotEquals = "!="
 
 OpenBracket = "("
 CloseBracket = ")"
+OpenSquareBracket = "["
+CloseSquareBracket = "]"
 OpenCurlyBraces = "{"
 CloseCurlyBraces = "}"
 Colon = ":"
@@ -104,12 +107,19 @@ Or = "||"
 Do = "do"
 Case = "case"
 Default = "default"
+Iguales = "#Iguales"
 
-Comment = \/\*.*\*\/
+//Comment = \/\*.*\*\/
+
+/* comments */
+Comment = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
+TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+// Comment can be the last line of the file, without line terminator.
+EndOfLineComment     = "//" .* {LineTerminator}?
+DocumentationComment = "/**" {CommentContent} "*"+ "/"
+CommentContent       = ( [^*] | \*+ [^/*] )*
 
 Space = " "
-Characters = @|\?|\.|\,|\+|\t|\n|\/|\_|\:|\;|¿|\*|{Letter}|{Digit}|{Space}|\=|\*|\>\<|\-|á|Á|é|É|í|Í|ó|Ó|ú|Ú|ü|ñ|Ñ|¡|\¿|%
-
 Float = "Float"
 Int = "Int"
 String = "String"
@@ -141,6 +151,8 @@ FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
   {NotEquals}                               { System.out.println("No igual a: " + yytext()); return symbol(ParserSym.NOT_EQUALS); }
   {OpenBracket}                             { System.out.println("Parentesis de apertura: " + yytext()); return symbol(ParserSym.OPEN_BRACKET); }
   {CloseBracket}                            { System.out.println("Parentesis de Cierre: " + yytext()); return symbol(ParserSym.CLOSE_BRACKET); }
+  {OpenSquareBracket}                       { System.out.println("Corchete de Apertura: " + yytext()); return symbol(ParserSym.OPEN_SQUARE_BRACKET); }
+  {CloseSquareBracket}                      { System.out.println("Corchete de Cierre: " + yytext()); return symbol(ParserSym.CLOSE_SQUARE_BRACKET); }
   //{InputCharacter}                          { System.out.println("Caracter de ingreso: " + yytext()); return symbol(ParserSym.INPUT_CHARACTER); }
   {OpenCurlyBraces}                         { System.out.println("Caracter {: " + yytext()); return symbol(ParserSym.OPEN_CURLY_BRACES); }
   {CloseCurlyBraces}                        { System.out.println("Caracter }: " + yytext()); return symbol(ParserSym.CLOSE_CURLY_BRACES); }
@@ -158,6 +170,7 @@ FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
   {Write}                                   { System.out.println("Write: " + yytext()); return symbol(ParserSym.WRITE); }
   {Do}                                      { System.out.println("Do: " + yytext()); return symbol(ParserSym.DO); }
   {Default}                                 { System.out.println("Default: " + yytext()); return symbol(ParserSym.DEFAULT); }
+  {Iguales}                                 { System.out.println("Iguales: " + yytext()); return symbol(ParserSym.IGUALES); }
   {Case}                                    { System.out.println("Case: " + yytext()); return symbol(ParserSym.CASE); }
 
   /* Types */
@@ -165,11 +178,31 @@ FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
   {Float}                                   { System.out.println("Palabra Reservada Float: " + yytext()); return symbol(ParserSym.FLOAT); }
   {String}                                  { System.out.println("Palabra Reservada String: " + yytext()); return symbol(ParserSym.STRING); }
   /* identifiers */
-  {Identifier}                              { validateIdLength(); System.out.println("Identificador: " + yytext()); return symbol(ParserSym.IDENTIFIER, yytext()); }
+  {Identifier}                              {
+                                                validateIdLength();
+                                                System.out.println("Identificador: " + yytext());
+                                                new SymbolTableGenerator().addToSymbolTable(yytext(),TIPO_DATO.EMPTY,"","");
+                                                return symbol(ParserSym.IDENTIFIER, yytext());
+                                            }
   /* Constants */
-  {IntegerConstant}                         { validateIntegerLength(); System.out.println("Constante Entera: " + yytext()); return symbol(ParserSym.INTEGER_CONSTANT, yytext()); }
-  {ConstString}                             { validateStringLength(); System.out.println("Constante String: " + yytext()); return symbol(ParserSym.CONST_STRING, yytext()); }
-  {FloatConstant}                           { validateFloatLength(); System.out.println("Constante Flotante: " + yytext()); return symbol(ParserSym.FLOAT_CONSTANT, yytext()); }
+  {IntegerConstant}                         {
+                                                  validateIntegerLength();
+                                                  System.out.println("Constante Entera: " + yytext());
+                                                  new SymbolTableGenerator().addToSymbolTable("_"+yytext(),TIPO_DATO.INT,yytext(),"");
+                                                  return symbol(ParserSym.INTEGER_CONSTANT, yytext());
+                                              }
+  {ConstString}                             {
+                                                validateStringLength();
+                                                System.out.println("Constante String: " + yytext());
+                                                new SymbolTableGenerator().addToSymbolTable("_"+yytext().replace("\"",""),TIPO_DATO.STRING,yytext().replace("\"",""),String.valueOf(yytext().length() - 2));
+                                                return symbol(ParserSym.CONST_STRING, yytext());
+                                            }
+  {FloatConstant}                           {
+                                                validateFloatLength();
+                                                System.out.println("Constante Flotante: " + yytext());
+                                                new SymbolTableGenerator().addToSymbolTable("_"+yytext(),TIPO_DATO.FLOAT,yytext(),"");
+                                                return symbol(ParserSym.FLOAT_CONSTANT, yytext());
+                                            }
 
   /* whitespace */
   {WhiteSpace}                              { /* ignore */ }
