@@ -4,6 +4,14 @@ init {
 if (a > b)
 {
     write("a es mas grande que b");
+    if (500 == a)
+    {
+        a = 1;
+    }
+    else
+    {
+        a = 2;
+    }
 }
 else
 {

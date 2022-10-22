@@ -1,10 +1,7 @@
 package lyc.compiler;
 
 import lyc.compiler.factories.LexerFactory;
-import lyc.compiler.model.CompilerException;
-import lyc.compiler.model.InvalidIntegerException;
-import lyc.compiler.model.InvalidLengthException;
-import lyc.compiler.model.UnknownCharacterException;
+import lyc.compiler.model.*;
 import org.apache.commons.text.CharacterPredicates;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.AfterEach;
@@ -61,6 +58,37 @@ public class LexerTest {
     });
   }
 
+  @Test
+  public void invalidNegativeFloatConstantValue() {
+    assertThrows(InvalidFloatException.class, () -> {
+      scan("-99999999099999.999999");
+      nextToken();
+    });
+  }
+
+  @Test
+  public void invalidPositiveFloatConstantValue() {
+    assertThrows(InvalidFloatException.class, () -> {
+      scan("99999999099999.999999");
+      nextToken();
+    });
+  }
+
+  @Test
+  public void invalidIntegerLength() {
+    assertThrows(InvalidLengthException.class, () -> {
+      scan("000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+      nextToken();
+    });
+  }
+
+  @Test
+  public void invalidFloatLength() {
+    assertThrows(InvalidLengthException.class, () -> {
+      scan("00000000000000000000000000000000000000000000000000.00000000000000000000000000000000000000000000001");
+      nextToken();
+    });
+  }
 
   @Test
   public void assignmentWithExpressions() throws Exception {
@@ -110,6 +138,10 @@ public class LexerTest {
   public void unknownCharacter() {
     assertThrows(UnknownCharacterException.class, () -> {
       scan("#");
+      nextToken();
+    });
+    assertThrows(UnknownCharacterException.class, () -> {
+      scan("@");
       nextToken();
     });
   }

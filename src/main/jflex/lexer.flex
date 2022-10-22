@@ -22,19 +22,29 @@ import lyc.compiler.files.SymbolTableGenerator.*;
 
 
 %{
-            private void validateIntegerLength() throws InvalidIntegerException {
+            private void validateIntegerLength() throws InvalidIntegerException, InvalidLengthException {
+                System.out.println("Validacion entero");
                 long value =  Long.valueOf(Long.parseLong(yytext()));
                 if ( value < MIN_INTEGER_LENGTH  || value > MAX_INTEGER_LENGTH )
                 {
                     throw new InvalidIntegerException("Constante entera fuera de rango en la linea" + yyline + "\n");
                 }
+                if ( yytext().length() > MAX_STRING_LENGTH )
+                {
+                    throw new InvalidLengthException("Capacidad maxima de caracteres asignados superada en la linea" + yyline + "\n");
+                }
                 //yyparser.yylval = new parserval(value);
             }
-            private void validateFloatLength() throws InvalidFloatException {
+            private void validateFloatLength() throws InvalidFloatException, InvalidLengthException {
+                System.out.println("Validacion flotante");
                 float value =  Float.valueOf(Float.parseFloat(yytext()));
                 if ( value < MIN_FLOAT_LENGTH  || value > MAX_FLOAT_LENGTH )
                 {
                     throw new InvalidFloatException("Constante flotante fuera de rango en la linea" + yyline + "\n");
+                }
+                if ( yytext().length() > MAX_STRING_LENGTH )
+                {
+                    throw new InvalidLengthException("Capacidad maxima de caracteres asignados superada en la linea" + yyline + "\n");
                 }
                 //yyparser.yylval = new parserval(value);
             }
@@ -99,7 +109,7 @@ While = "while"
 Init = "init"
 Write = "write"
 Read = "read"
-Not = "👎"
+Not = "👎"|"not"
 And = "&&"
 Or = "||"
 
@@ -128,8 +138,10 @@ WhiteSpace = {LineTerminator} | {Indentation}
 Identifier = {Letter}({Letter}|{Digit})*
 IntegerConstant = -?{Digit}+
 ConstString = \"[^\"]*\"
-FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
-
+//-9999999999999.999999
+//NUM = [0-9]+ ("." [0-9]+)
+//              .25 | 25.0                  25.
+FloatConstant = -?{Digit}*("." {Digit}+) | -?{Digit}+ ("." {Digit}*)
 %%
 
 
@@ -142,7 +154,7 @@ FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
   {Mult}                                    { System.out.println("Signo Multiplicación: " + yytext()); return symbol(ParserSym.MULT); }
   {Sub}                                     { System.out.println("Signo Menos: " + yytext()); return symbol(ParserSym.SUB); }
   {Div}                                     { System.out.println("Signo Division: " + yytext()); return symbol(ParserSym.DIV); }
-  {Assig}                                   { System.out.println("Asignación: " + yytext()); return symbol(ParserSym.ASSIG); }
+  {Assig}                                   { System.out.println("Asignación: " + yytext()); return symbol(ParserSym.ASSIG, yytext()); } // Pusimos que deveuvla yytext porque si no el valor del token era nulo.
   {GreaterThan}                             { System.out.println("Mayor a: " + yytext()); return symbol(ParserSym.GREATER_THAN); }
   {GreaterOrEqualThan}                      { System.out.println("Mayor o igual a: " + yytext()); return symbol(ParserSym.GREATER_OR_EQUAL_THAN); }
   {LowerThan}                            	{ System.out.println("Menor a: " + yytext()); return symbol(ParserSym.LOWER_THAN); }
@@ -212,4 +224,4 @@ FloatConstant = {Digit}*"."{Digit}+ | {Digit}+"."{Digit}*
 
 
 /* error fallback */
-[#]                              { throw new UnknownCharacterException(yytext()); }
+.|\n                              { throw new UnknownCharacterException(yytext()); }

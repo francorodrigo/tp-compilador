@@ -1,7 +1,7 @@
 package lyc.compiler;
 
 import java_cup.runtime.*;
-
+import lyc.compiler.files.*;
 class Parser;
 
 
@@ -123,20 +123,80 @@ expressionList::= expressionList COMMA expression {: System.out.println("<expres
 
 write ::= WRITE OPEN_BRACKET factor CLOSE_BRACKET {: System.out.println("<write> => WRITE OPEN_BRACKET <factor> CLOSE_BRACKET"); :};
 write ::= WRITE OPEN_BRACKET string CLOSE_BRACKET {: System.out.println("<write> => WRITE OPEN_BRACKET <string> CLOSE_BRACKET"); :};
-read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET {: System.out.println("<read> => READ OPEN_BRACKET IDENTIFIER: " + id + " CLOSE_BRACKET"); :};
+read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET
+{:
 
-assignment ::= IDENTIFIER ASSIG expression {: System.out.println("<assignment> => IDENTIFIER ASSIG <expression>"); :};
-assignment ::= IDENTIFIER ASSIG string {: System.out.println("<assignment> => IDENTIFIER ASSIG <string>"); :};
-expression ::= expression PLUS term {: System.out.println("<expression> => <expression> PLUS <term>"); :};
-expression ::= expression SUB term {: System.out.println("<expression> => <expression> SUB <term>"); :};
-expression ::= term {: System.out.println("<expression> => <term>"); :};
-term ::= term MULT factor {: System.out.println("<term> => <term> MULT <factor>"); :};
-term ::= term DIV factor {: System.out.println("<term> => <term> DIV <factor>"); :};
-term ::= factor {: System.out.println("<term> => <factor>"); :};
-factor ::= IDENTIFIER:id  {: System.out.println("<factor> => IDENTIFIER " + id); :};
-factor ::= INTEGER_CONSTANT:constant {: System.out.println("<factor> => INTEGER_CONSTANT " + constant ); :};
-factor ::= FLOAT_CONSTANT:constant {: System.out.println("<factor> => FLOAT_CONSTANT" + constant ); :};
-factor ::= OPEN_BRACKET expression CLOSE_BRACKET {: System.out.println("<factor> => OPEN_BRACKET <expression> CLOSE_BRACKET"); :};
-factor ::= iguales {: System.out.println("<factor> => <iguales>");:};
-string ::= CONST_STRING:constant {: System.out.println("<string> => CONST_STRING " + constant); :};
+    System.out.println("<read> => READ OPEN_BRACKET IDENTIFIER: " + id + " CLOSE_BRACKET");
+:};
 
+assignment ::= IDENTIFIER:id ASSIG:asig expression
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(asig,id,IntermediateCodeGenerator.indices.get("ExpressionIndex"),"AssignmentIndex");
+    System.out.println("<assignment> => IDENTIFIER ASSIG <expression>");
+:};
+assignment ::= IDENTIFIER:id ASSIG:asig string
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(asig,id,IntermediateCodeGenerator.indices.get("StringIndex"),"AssignmentIndex");
+    System.out.println("<assignment> => IDENTIFIER ASSIG <string>");
+:};
+expression ::= expression PLUS:operador term
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(operador,IntermediateCodeGenerator.indices.get("ExpressionIndex"),IntermediateCodeGenerator.indices.get("TermIndex"),"ExpressionIndex");
+    System.out.println("<expression> => <expression> PLUS <term>");
+:};
+expression ::= expression SUB:operador term
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(operador,IntermediateCodeGenerator.indices.get("ExpressionIndex"),IntermediateCodeGenerator.indices.get("TermIndex"),"ExpressionIndex");
+    System.out.println("<expression> => <expression> SUB <term>");
+:};
+expression ::= term
+{:
+    IntermediateCodeGenerator.getInstance().asignarTerceto("ExpressionIndex","TermIndex");
+    System.out.println("<expression> => <term>");
+:};
+term ::= term MULT:operador factor
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(operador,IntermediateCodeGenerator.indices.get("TermIndex"),IntermediateCodeGenerator.indices.get("FactorIndex"),"TermIndex");
+    System.out.println("<term> => <term> MULT <factor>");
+:};
+term ::= term DIV:operador factor
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(operador,IntermediateCodeGenerator.indices.get("TermIndex"),IntermediateCodeGenerator.indices.get("FactorIndex"),"TermIndex");
+    System.out.println("<term> => <term> DIV <factor>");
+:};
+term ::= factor
+{:
+    IntermediateCodeGenerator.getInstance().asignarTerceto("TermIndex","FactorIndex");
+    System.out.println("<term> => <factor>");
+:};
+factor ::= IDENTIFIER:id
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(id,"FactorIndex");
+    System.out.println("<factor> => IDENTIFIER " + id);
+:};
+factor ::= INTEGER_CONSTANT:constant
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(constant,"FactorIndex");
+    System.out.println("<factor> => INTEGER_CONSTANT " + constant );
+:};
+
+factor ::= FLOAT_CONSTANT:constant
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(constant,"FactorIndex");
+    System.out.println("<factor> => FLOAT_CONSTANT" + constant );
+:};
+factor ::= OPEN_BRACKET expression CLOSE_BRACKET
+{:
+    IntermediateCodeGenerator.getInstance().asignarTerceto("FactorIndex","ExpressionIndex");
+    System.out.println("<factor> => OPEN_BRACKET <expression> CLOSE_BRACKET");
+:};
+factor ::= iguales
+{:
+    IntermediateCodeGenerator.getInstance().asignarTerceto("FactorIndex","IgualesIndex");
+    System.out.println("<factor> => <iguales>");
+:};
+string ::= CONST_STRING:constant
+{:
+    IntermediateCodeGenerator.getInstance().crearYAsignarTerceto(constant, "StringIndex");
+    System.out.println("<string> => CONST_STRING " + constant);
+:};
