@@ -63,7 +63,7 @@ do a {
 
 a = #Iguales ( a+w/b, [(d - 3) * 2,e,f] );
 
-if (👎 a > b)
+if (not a > b)
 {
     write("a no es mas grande que b");
 }

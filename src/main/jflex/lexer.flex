@@ -150,45 +150,45 @@ FloatConstant = -?{Digit}*("." {Digit}+) | -?{Digit}+ ("." {Digit}*)
 <YYINITIAL> {
 
   /* operators */
-  {Plus}                                    { System.out.println("Signo Mas: " + yytext()); return symbol(ParserSym.PLUS); }
-  {Mult}                                    { System.out.println("Signo Multiplicación: " + yytext()); return symbol(ParserSym.MULT); }
-  {Sub}                                     { System.out.println("Signo Menos: " + yytext()); return symbol(ParserSym.SUB); }
-  {Div}                                     { System.out.println("Signo Division: " + yytext()); return symbol(ParserSym.DIV); }
+  {Plus}                                    { System.out.println("Signo Mas: " + yytext()); return symbol(ParserSym.PLUS, yytext()); }
+  {Mult}                                    { System.out.println("Signo Multiplicación: " + yytext()); return symbol(ParserSym.MULT, yytext()); }
+  {Sub}                                     { System.out.println("Signo Menos: " + yytext()); return symbol(ParserSym.SUB, yytext()); }
+  {Div}                                     { System.out.println("Signo Division: " + yytext()); return symbol(ParserSym.DIV, yytext()); }
   {Assig}                                   { System.out.println("Asignación: " + yytext()); return symbol(ParserSym.ASSIG, yytext()); } // Pusimos que deveuvla yytext porque si no el valor del token era nulo.
-  {GreaterThan}                             { System.out.println("Mayor a: " + yytext()); return symbol(ParserSym.GREATER_THAN); }
-  {GreaterOrEqualThan}                      { System.out.println("Mayor o igual a: " + yytext()); return symbol(ParserSym.GREATER_OR_EQUAL_THAN); }
-  {LowerThan}                            	{ System.out.println("Menor a: " + yytext()); return symbol(ParserSym.LOWER_THAN); }
-  {LowerOrEqualThan}                        { System.out.println("Menor o igual a: " + yytext()); return symbol(ParserSym.LOWER_OR_EQUAL_THAN); }
-  {Equals}                                  { System.out.println("Igual a: " + yytext()); return symbol(ParserSym.EQUALS); }
-  {NotEquals}                               { System.out.println("No igual a: " + yytext()); return symbol(ParserSym.NOT_EQUALS); }
-  {OpenBracket}                             { System.out.println("Parentesis de apertura: " + yytext()); return symbol(ParserSym.OPEN_BRACKET); }
-  {CloseBracket}                            { System.out.println("Parentesis de Cierre: " + yytext()); return symbol(ParserSym.CLOSE_BRACKET); }
-  {OpenSquareBracket}                       { System.out.println("Corchete de Apertura: " + yytext()); return symbol(ParserSym.OPEN_SQUARE_BRACKET); }
-  {CloseSquareBracket}                      { System.out.println("Corchete de Cierre: " + yytext()); return symbol(ParserSym.CLOSE_SQUARE_BRACKET); }
+  {GreaterThan}                             { System.out.println("Mayor a: " + yytext()); return symbol(ParserSym.GREATER_THAN, yytext()); }
+  {GreaterOrEqualThan}                      { System.out.println("Mayor o igual a: " + yytext()); return symbol(ParserSym.GREATER_OR_EQUAL_THAN, yytext()); }
+  {LowerThan}                            	{ System.out.println("Menor a: " + yytext()); return symbol(ParserSym.LOWER_THAN, yytext()); }
+  {LowerOrEqualThan}                        { System.out.println("Menor o igual a: " + yytext()); return symbol(ParserSym.LOWER_OR_EQUAL_THAN, yytext()); }
+  {Equals}                                  { System.out.println("Igual a: " + yytext()); return symbol(ParserSym.EQUALS, yytext()); }
+  {NotEquals}                               { System.out.println("No igual a: " + yytext()); return symbol(ParserSym.NOT_EQUALS, yytext()); }
+  {OpenBracket}                             { System.out.println("Parentesis de apertura: " + yytext()); return symbol(ParserSym.OPEN_BRACKET, yytext()); }
+  {CloseBracket}                            { System.out.println("Parentesis de Cierre: " + yytext()); return symbol(ParserSym.CLOSE_BRACKET, yytext()); }
+  {OpenSquareBracket}                       { System.out.println("Corchete de Apertura: " + yytext()); return symbol(ParserSym.OPEN_SQUARE_BRACKET, yytext()); }
+  {CloseSquareBracket}                      { System.out.println("Corchete de Cierre: " + yytext()); return symbol(ParserSym.CLOSE_SQUARE_BRACKET, yytext()); }
   //{InputCharacter}                          { System.out.println("Caracter de ingreso: " + yytext()); return symbol(ParserSym.INPUT_CHARACTER); }
-  {OpenCurlyBraces}                         { System.out.println("Caracter {: " + yytext()); return symbol(ParserSym.OPEN_CURLY_BRACES); }
-  {CloseCurlyBraces}                        { System.out.println("Caracter }: " + yytext()); return symbol(ParserSym.CLOSE_CURLY_BRACES); }
-  {SemiColon}                               { System.out.println("Punto y coma: " + yytext()); return symbol(ParserSym.SEMI_COLON); }
-  {Comma}                                   { System.out.println("Coma: " + yytext()); return symbol(ParserSym.COMMA); }
-  {Colon}                                   { System.out.println("Dos puntos: " + yytext()); return symbol(ParserSym.COLON); }
-  {If}                                      { System.out.println("If: " + yytext()); return symbol(ParserSym.IF); }
-  {While}                                   { System.out.println("While: " + yytext()); return symbol(ParserSym.WHILE); }
-  {Else}                                    { System.out.println("Else: " + yytext()); return symbol(ParserSym.ELSE); }
-  {Not}                                     { System.out.println("Not: " + yytext()); return symbol(ParserSym.NOT); }
-  {And}                                     { System.out.println("And:" + yytext()); return symbol(ParserSym.AND); }
-  {Or}                                      { System.out.println("Or: " + yytext()); return symbol(ParserSym.OR); }
-  {Init}                                    { System.out.println("Init: " + yytext()); return symbol(ParserSym.INIT); }
-  {Read}                                    { System.out.println("Read: " + yytext()); return symbol(ParserSym.READ); }
-  {Write}                                   { System.out.println("Write: " + yytext()); return symbol(ParserSym.WRITE); }
-  {Do}                                      { System.out.println("Do: " + yytext()); return symbol(ParserSym.DO); }
-  {Default}                                 { System.out.println("Default: " + yytext()); return symbol(ParserSym.DEFAULT); }
-  {Iguales}                                 { System.out.println("Iguales: " + yytext()); return symbol(ParserSym.IGUALES); }
-  {Case}                                    { System.out.println("Case: " + yytext()); return symbol(ParserSym.CASE); }
+  {OpenCurlyBraces}                         { System.out.println("Caracter {: " + yytext()); return symbol(ParserSym.OPEN_CURLY_BRACES, yytext()); }
+  {CloseCurlyBraces}                        { System.out.println("Caracter }: " + yytext()); return symbol(ParserSym.CLOSE_CURLY_BRACES, yytext()); }
+  {SemiColon}                               { System.out.println("Punto y coma: " + yytext()); return symbol(ParserSym.SEMI_COLON, yytext()); }
+  {Comma}                                   { System.out.println("Coma: " + yytext()); return symbol(ParserSym.COMMA, yytext()); }
+  {Colon}                                   { System.out.println("Dos puntos: " + yytext()); return symbol(ParserSym.COLON, yytext()); }
+  {If}                                      { System.out.println("If: " + yytext()); return symbol(ParserSym.IF, yytext()); }
+  {While}                                   { System.out.println("While: " + yytext()); return symbol(ParserSym.WHILE, yytext()); }
+  {Else}                                    { System.out.println("Else: " + yytext()); return symbol(ParserSym.ELSE, yytext()); }
+  {Not}                                     { System.out.println("Not: " + yytext()); return symbol(ParserSym.NOT, yytext()); }
+  {And}                                     { System.out.println("And:" + yytext()); return symbol(ParserSym.AND, yytext()); }
+  {Or}                                      { System.out.println("Or: " + yytext()); return symbol(ParserSym.OR, yytext()); }
+  {Init}                                    { System.out.println("Init: " + yytext()); return symbol(ParserSym.INIT, yytext()); }
+  {Read}                                    { System.out.println("Read: " + yytext()); return symbol(ParserSym.READ, yytext()); }
+  {Write}                                   { System.out.println("Write: " + yytext()); return symbol(ParserSym.WRITE, yytext()); }
+  {Do}                                      { System.out.println("Do: " + yytext()); return symbol(ParserSym.DO, yytext()); }
+  {Default}                                 { System.out.println("Default: " + yytext()); return symbol(ParserSym.DEFAULT, yytext()); }
+  {Iguales}                                 { System.out.println("Iguales: " + yytext()); return symbol(ParserSym.IGUALES, yytext()); }
+  {Case}                                    { System.out.println("Case: " + yytext()); return symbol(ParserSym.CASE, yytext()); }
 
   /* Types */
-  {Int}                                     { System.out.println("Palabra Reservada Int: " + yytext()); return symbol(ParserSym.INT); }
-  {Float}                                   { System.out.println("Palabra Reservada Float: " + yytext()); return symbol(ParserSym.FLOAT); }
-  {String}                                  { System.out.println("Palabra Reservada String: " + yytext()); return symbol(ParserSym.STRING); }
+  {Int}                                     { System.out.println("Palabra Reservada Int: " + yytext()); return symbol(ParserSym.INT, yytext()); }
+  {Float}                                   { System.out.println("Palabra Reservada Float: " + yytext()); return symbol(ParserSym.FLOAT, yytext()); }
+  {String}                                  { System.out.println("Palabra Reservada String: " + yytext()); return symbol(ParserSym.STRING, yytext()); }
   /* identifiers */
   {Identifier}                              {
                                                 validateIdLength();
