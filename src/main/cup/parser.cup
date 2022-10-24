@@ -90,50 +90,295 @@ decVarSection ::= INIT OPEN_CURLY_BRACES varFields CLOSE_CURLY_BRACES {: System.
 decVarSection ::= INIT OPEN_CURLY_BRACES CLOSE_CURLY_BRACES {: System.out.println("<decVarSection> => INIT OPEN_CURLY_BRACES CLOSE_CURLY_BRACES"); :};
 varFields ::= varFields varList COLON dataType SEMI_COLON {: System.out.println("<varFields> => <varFields> <varList> COLON <dataType> SEMI_COLON"); :};
 varFields ::= varList COLON dataType SEMI_COLON {: System.out.println("<varFields> => <varList> COLON <dataType> SEMI_COLON"); :};
-varList ::= IDENTIFIER | varList COMMA IDENTIFIER {: System.out.println("<varList> => IDENTIFIER | <varList> COMMA IDENTIFIER"); :};
-dataType ::= INT | FLOAT | STRING {: System.out.println("<dataType> => INT | FLOAT | STRING"); :};
+varList ::= IDENTIFIER:id {:
+    TercetoGenerator.getInstance().crearYAsignarTerceto(id,"VarListIndex");
+    System.out.println("<varList> => IDENTIFIER");
+:};
+varList ::= varList COMMA IDENTIFIER {: System.out.println("<varList> => <varList> COMMA IDENTIFIER"); :};
+dataType ::= INT:type | FLOAT:type | STRING:type
+{:
+    System.out.println("<dataType> => INT | FLOAT | STRING");
+:};
 program ::= program sentence {: System.out.println("<program> => <program> <sentence>"); :};
-program ::= sentence {:
+program ::= sentence
+{:
     TercetoGenerator.getInstance().asignarTerceto("ProgramIndex","SentenceIndex");
     System.out.println("<program> => <sentence>");
 :};
 
-sentence ::= assignment SEMI_COLON {: System.out.println("<sentence> => <assignment> SEMI_COLON"); :};
-sentence ::= write SEMI_COLON {: System.out.println("<sentence> => <write> SEMI_COLON"); :};
-sentence ::= read SEMI_COLON {: System.out.println("<sentence> => <read> SEMI_COLON"); :};
-sentence ::= selection {:
+sentence ::= assignment SEMI_COLON
+{:
+    TercetoGenerator.getInstance().asignarTerceto("SentenceIndex", "AssignmentIndex");
+    System.out.println("<sentence> => <assignment> SEMI_COLON");
+:};
+sentence ::= write SEMI_COLON
+{:
+    TercetoGenerator.getInstance().asignarTerceto("SentenceIndex", "WriteIndex");
+    System.out.println("<sentence> => <write> SEMI_COLON");
+:};
+sentence ::= read SEMI_COLON
+{:
+    TercetoGenerator.getInstance().asignarTerceto("SentenceIndex", "ReadIndex");
+    System.out.println("<sentence> => <read> SEMI_COLON");
+:};
+sentence ::= selection
+{:
     TercetoGenerator.getInstance().asignarTerceto("SentenceIndex","SelectionIndex");
     System.out.println("<sentence> => <selection>");
 :};
-sentence ::= iteration {:
+sentence ::= iteration
+{:
     TercetoGenerator.getInstance().asignarTerceto("SentenceIndex","IterationIndex");
     System.out.println("<sentence> => <iteration>");
 :};
-sentence ::= case {:
+sentence ::= case
+{:
     TercetoGenerator.getInstance().asignarTerceto("SentenceIndex","CaseIndex");
     System.out.println("<sentence> => <case>");
 :};
 
 iteration ::= WHILE OPEN_BRACKET conditional CLOSE_BRACKET OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<iteration> ==> WHILE OPEN_BRACKET <conditional> CLOSE_BRACKET OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES"); :};
-selection ::= IF OPEN_BRACKET conditional CLOSE_BRACKET OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES ELSE OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<selection> ==> IF OPEN_BRACKET <conditional> CLOSE_BRACKET OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES ELSE OPEN_CURLU_BRACES <program> CLOSE_CURLY_BRACES"); :};
-selection ::= IF OPEN_BRACKET conditional CLOSE_BRACKET OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<selection> ==> IF OPEN_BRACKET <conditional> CLOSE_BRACKET OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES"); :};
 
-conditional ::= comparison {:
+selection ::= IF OPEN_BRACKET conditional {:
+     TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux",1);
+     int idx = TercetoGenerator.getInstance().crearTerceto("BNE","_","_");
+     TercetoGenerator.pilaIndices.push(idx);
+:} CLOSE_BRACKET OPEN_CURLY_BRACES program {:
+    int id = TercetoGenerator.crearTerceto("BI","_","_");
+    TercetoGenerator.pilaIndices.push(id);
+:} CLOSE_CURLY_BRACES ELSE OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {:
+    int id = TercetoGenerator.pilaIndices.pop();
+    Terceto tIncondicional = TercetoGenerator.tercetos.get(id);
+    tIncondicional.segundoElemento = "[" + TercetoGenerator.tercetos.size() + "]";
+    int id2 = TercetoGenerator.pilaIndices.pop();
+    Terceto tFalso = TercetoGenerator.tercetos.get(id);
+    tIncondicional.segundoElemento = "[" + TercetoGenerator.indices.get("ProgramIndex") + "]";
+    System.out.println("<selection> ==> IF OPEN_BRACKET <conditional> CLOSE_BRACKET OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES ELSE OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES");
+:};
+
+
+selection ::= IF OPEN_BRACKET conditional {:
+    TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux",1);
+    int idx = TercetoGenerator.getInstance().crearTerceto("BNE","_","_");
+    TercetoGenerator.pilaIndices.push(idx);
+:} CLOSE_BRACKET OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {:
+    Terceto tFalso = TercetoGenerator.tercetos.get(TercetoGenerator.pilaIndices.pop());
+    tFalso.segundoElemento = "[" + TercetoGenerator.tercetos.size() + "]";
+    System.out.println("<selection> ==> IF OPEN_BRACKET <conditional> CLOSE_BRACKET OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES");
+:};
+
+//selection ::= IF OPEN_BRACKET conditional CLOSE_BRACKET OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<selection> ==> IF OPEN_BRACKET <conditional> CLOSE_BRACKET OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES"); :};
+conditional ::= comparison
+{:
     System.out.println("<conditional> ==> comparison");
     TercetoGenerator.getInstance().asignarTerceto("ConditionalIndex","ComparisonIndex");
 :};
-conditional ::= NOT comparison {: System.out.println("NOT <conditional> ==> comparison"); :};
-conditional ::= conditional AND comparison  {: System.out.println("<conditional> ==> <conditional> AND <comparison>"); :};
-conditional ::= conditional OR comparison   {: System.out.println("<conditional> ==> <conditional> OR <comparison>"); :};
-comparison ::= expression comparator expression {: System.out.println("<comparison> ==> <expression> <comparator> <expression>"); :};
-comparison ::= OPEN_BRACKET expression comparator expression CLOSE_BRACKET {: System.out.println("<comparison> ==> OPEN_BRACKET <expression> <comparator> <expression> CLOSE_BRACKET"); :};
 
-comparator ::= GREATER_THAN:value | GREATER_OR_EQUAL_THAN:value | LOWER_THAN:value | LOWER_OR_EQUAL_THAN:value | EQUALS:value | NOT_EQUALS:value {: System.out.println("<comparator> => GREATER_THAN | GREATER_OR_EQUAL_THAN | LOWER_THAN | LOWER_OR_EQUAL_THAN | NOT_EQUALS: " + value ); :};
-case ::= DO IDENTIFIER OPEN_CURLY_BRACES caseWrapper CLOSE_CURLY_BRACES {: System.out.println("<case> ==> DO IDENTIFIER <caseWrapper> END_DO"); :};
-case ::= DO IDENTIFIER OPEN_CURLY_BRACES caseWrapper  defaultCase CLOSE_CURLY_BRACES {: System.out.println("<case> ==> DO IDENTIFIER OPEN_CURLY_BRACES <caseWrapper>  <defaultCase> CLOSE_CURLY_BRACES"); :};
-caseWrapper ::=  caseWrapper CASE comparison OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<caseWrapper> => <caseWrapper> CASE <comparison>"); :};
-caseWrapper ::= CASE comparison OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<caseWrapper> => CASE <comparison>"); :};
-defaultCase ::= DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES {: System.out.println("<defaultCase> => DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES"); :};
+
+
+conditional ::= NOT comparison {:
+    /*
+    [CMP, @BoolAux, 1] 1
+    [BNE, 5, _] 2
+    [=, @BoolAux, 1] 3
+    [BI, 6, _] 4
+    [=, @BoolAux, 0] 5
+    [blablabla] 6
+    */
+    idxComp = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","1"); // 1
+    idxAux = idxComp + 4; //5
+    TercetoGenerator.getInstance().crearTerceto("BEQ","[" + idxAux + "]",0); // 2
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux",1); // 3
+    idxAux++;
+    TercetoGenerator.getInstance().crearTerceto("BI","[" + idxAux + "]",0); // 4
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux",0); // 5
+
+    //TercetoGenerator.getInstance().crearYAsignarTerceto("NOT", TercetoGenerator.getInstance().obtenerTercetoDelENT("ComparisonIndex"),"_","ConditionalIndex");
+    System.out.println("NOT <conditional> ==> comparison");
+:};
+conditional ::= conditional
+{:
+    //traemos boolaux y lo apilamos
+    int idBoolAuxActual = TercetoGenerator.crearTerceto("=","@BoolAux","@BoolAuxTemp");
+    TercetoGenerator.pilaIndices.push(idBoolAuxActual);
+:} AND comparison
+{:
+    /*
+    [CMP,@BoolAuxTemp,1] 1
+    [BNE,6,_] 2 ; El condicional a izquierda dio falso, salimos y dejamos boolAux = 0
+    [CMP,@BoolAux,1] 3
+    [BNE,6,_] 4 ; El condicional a derecha dio falso, salimos y dejamos boolAux = 0
+    [BI,7,_] 5 ; Ambos fueron verdaderos, dejamos boolAux en 1.
+    [=,@BoolAux,0] 6 ; Alguno no era 1, el resultado es 0.
+    [bla bla bla] 7
+    */
+    int idxCompIzq = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAuxTemp",1);
+    int idxAux = idxCompIzq + 5;
+    TercetoGenerator.getInstance().crearTerceto("BNE","[" + idxAux + "]","_");
+    TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux",1);
+    TercetoGenerator.getInstance().crearTerceto("BNE","[" + idxAux + "]","_");
+    idxAux++;
+    TercetoGenerator.getInstance().crearTerceto("BI","[" + idxAux + "]" + "_");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux",0);
+    System.out.println("<conditional> ==> <conditional> AND <comparison>");
+:};
+
+conditional ::= conditional
+{:
+    //traemos boolaux y lo apilamos
+    int idBoolAuxActual = TercetoGenerator.crearTerceto("=","@BoolAux","@BoolAuxTemp");
+    TercetoGenerator.pilaIndices.push(idBoolAuxActual);
+:} OR comparison
+{:
+    /*
+    [CMP,@BoolAux,1] 1
+    [BNE,4,_] 2
+    [BI,7,_] 3 ; BoolAux ya es 1, no hay nada que hacer
+    [CMP,@BoolAuxTemp,1] 4
+    [BNE,7,_] 5
+    [=,@BoolAux,1] 6 ; BoolAux no era 1, pero BoolAuxTemp sí, entonces ponemos a BoolAux en 1.
+    [bla bla bla] 7
+    */
+    //Si boolAux es 1, dejarlo en 1
+    int id1 = TercetoGenerator.crearTerceto("CMP","@BoolAux","1");
+
+    int idSaltoSiguienteCondicion = TercetoGenerator.tercetos.size()+1;
+    TercetoGenerator.crearTerceto("BNE","["+idSaltoSiguienteCondicion+"]","_");//Si no es uno, saltar a la comparación de boolAuxTemp
+
+    int idSaltoFinalComparacion = TercetoGenerator.tercetos.size()+3;
+
+    TercetoGenerator.getInstance().crearTerceto("BI","[" + idSaltoFinalComparacion + "]","_"); //Si ya era uno, el OR es verdadero y salimos
+
+    //Si no valia 1, comparamos BoolAuxTemp, que es el BoolAux de la expresion a izquierda del OR.
+    int id2 = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAuxTemp","1");
+
+    idSaltoFinalComparacion = TercetoGenerator.tercetos.size()+1;
+    TercetoGenerator.getInstance().crearTerceto("BNE","[" + idSaltoFinalComparacion + "]","_"); //Si NO era 1, ninguno era 1, y salimos.
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1");
+    System.out.println("<conditional> ==> <conditional> OR <comparison>");
+:};
+/*comparisonCase ::= expression {:TercetoGenerator.getInstance().apilarIndiceDeTerceto("ExpressionIndex");:} comparator:value expression
+{:
+    int idExpression2 = TercetoGenerator.indices.get("ExpressionIndex");
+    int idExpression1 = TercetoGenerator.pilaIndices.pop();
+    TercetoGenerator.getInstance().crearYAsignarTerceto("CMP","[" + idExpression1 + "]", "[" + idExpression2 + "]", "ComparisonIndex"); //[CMP, [1], [2]]
+    String op = TercetoGenerator.pilaOperadores.pop(); // "<"
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","0");
+    int idComp = TercetoGenerator.getInstance().crearTerceto(TercetoGenerator.operadores.get(op),"_","_"); //[BGE,_,_]
+    TercetoGenerator.pilaIndices.push(idComp);
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1");
+    System.out.println("<comparison> ==> <expression> <comparator> <expression>");
+:};
+//IF A > B
+comparisonCase ::= OPEN_BRACKET expression{:TercetoGenerator.getInstance().apilarIndiceDeTerceto("ExpressionIndex");:} comparator expression CLOSE_BRACKET
+{:
+    int idExpression2 = TercetoGenerator.indices.get("ExpressionIndex");
+    int idExpression1 = TercetoGenerator.pilaIndices.pop();
+    TercetoGenerator.getInstance().crearYAsignarTerceto("CMP","[" + idExpression1 + "]", "[" + idExpression2 + "]", "ComparisonIndex"); //[CMP, [1], [2]]
+    String op = TercetoGenerator.pilaOperadores.pop(); // "<"
+    int idComp = TercetoGenerator.getInstance().crearTerceto(TercetoGenerator.operadores.get(op),"_","_"); //[BGE,_,_]
+    TercetoGenerator.pilaIndices.push(idComp);
+    System.out.println("<comparison> ==> OPEN_BRACKET <expression> <comparator> <expression> CLOSE_BRACKET");
+:};*/
+
+
+comparison ::= expression {: TercetoGenerator.getInstance().apilarIndiceDeTerceto("ExpressionIndex"); :} comparator:value expression
+{:
+    int idExpression2 = TercetoGenerator.indices.get("ExpressionIndex");
+    int idExpression1 = TercetoGenerator.pilaIndices.pop();
+    int idAux = TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","0");
+    TercetoGenerator.getInstance().crearYAsignarTerceto("CMP","[" + idExpression1 + "]", "[" + idExpression2 + "]", "ComparisonIndex"); //[CMP, [1], [2]]
+    idAux+=4;
+    String op = TercetoGenerator.pilaOperadores.pop(); // "<"
+    int idComp = TercetoGenerator.getInstance().crearTerceto(TercetoGenerator.operadores.get(op),"[" + idAux + "]","_"); //BGE
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1");
+    System.out.println("<comparison> ==> <expression> <comparator> <expression>");
+:};
+
+comparison ::= OPEN_BRACKET expression {: TercetoGenerator.getInstance().apilarIndiceDeTerceto("ExpressionIndex"); :} comparator expression CLOSE_BRACKET
+{:
+    int idExpression2 = TercetoGenerator.indices.get("ExpressionIndex");
+    int idExpression1 = TercetoGenerator.pilaIndices.pop();
+    int idAux = TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","0");
+    TercetoGenerator.getInstance().crearYAsignarTerceto("CMP","[" + idExpression1 + "]", "[" + idExpression2 + "]", "ComparisonIndex"); //[CMP, [1], [2]]
+    idAux+=4;
+    String op = TercetoGenerator.pilaOperadores.pop(); // "<"
+    int idComp = TercetoGenerator.getInstance().crearTerceto(TercetoGenerator.operadores.get(op),"[" + idAux + "]","_");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1");
+    System.out.println("<comparison> ==> OPEN_BRACKET <expression> <comparator> <expression> CLOSE_BRACKET");
+:};
+
+comparator ::= GREATER_THAN:value
+{:
+    TercetoGenerator.pilaOperadores.push(value.toString()); //[BGE,_,_]
+    System.out.println("<comparator> => GREATER_THAN: " + value );
+:}
+| GREATER_OR_EQUAL_THAN:value
+{:
+    TercetoGenerator.pilaOperadores.push(value.toString()); //[BGE,_,_]
+    System.out.println("<comparator> => GREATER_OR_EQUAL_THAN" + value );
+:}
+| LOWER_THAN:value
+{:
+    TercetoGenerator.pilaOperadores.push(value.toString()); //[BGE,_,_]
+    System.out.println("<comparator> => LOWER_THAN" + value );
+:}
+| LOWER_OR_EQUAL_THAN:value
+{:
+    TercetoGenerator.pilaOperadores.push(value.toString()); //[BGE,_,_]
+    System.out.println("<comparator> =>LOWER_OR_EQUAL_THAN: " + value );
+:}
+| EQUALS:value
+{:
+    TercetoGenerator.pilaOperadores.push(value.toString()); //[BGE,_,_]
+    System.out.println("<comparator> => EQUALS: " + value );
+:}
+| NOT_EQUALS:value
+{:
+    TercetoGenerator.pilaOperadores.push(value.toString()); //[BGE,_,_]
+    System.out.println("<comparator> => NOT_EQUALS: " + value );
+:};
+
+case ::= DO IDENTIFIER OPEN_CURLY_BRACES caseWrapper CLOSE_CURLY_BRACES
+{:
+    while(!TercetoGenerator.pilaIndices.isEmpty()) {
+        Terceto tercetoBI = TercetoGenerator.tercetos.get(TercetoGenerator.pilaIndices.pop());
+        tercetoBI.segundoElemento = "[" + TercetoGenerator.tercetos.size() + "]";
+    }
+    System.out.println("<case> ==> DO IDENTIFIER <caseWrapper> END_DO");
+:};
+case ::= DO IDENTIFIER OPEN_CURLY_BRACES caseWrapper defaultCase CLOSE_CURLY_BRACES
+{:
+    int idDefaultCase = TercetoGenerator.indices.get("DefaultCaseIndex");
+    while(!TercetoGenerator.pilaIndices.isEmpty()) {
+        Terceto tercetoBI = TercetoGenerator.tercetos.get(TercetoGenerator.pilaIndices.pop());
+        tercetoBI.segundoElemento = "[" + idDefaultCase + "]";
+    }
+    System.out.println("<case> ==> DO IDENTIFIER OPEN_CURLY_BRACES <caseWrapper>  <defaultCase> CLOSE_CURLY_BRACES");
+:};
+caseWrapper ::=  caseWrapper CASE comparison OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES
+{:
+    int idComp = TercetoGenerator.pilaIndices.pop();
+    Terceto tercetoComp = TercetoGenerator.tercetos.get(idComp);
+    int idUltimoTerceto = TercetoGenerator.tercetos.size();
+    tercetoComp.segundoElemento = "[" + idUltimoTerceto + "]";
+    int idTercetoBI = TercetoGenerator.getInstance().crearTerceto("BI","_","_");
+    TercetoGenerator.pilaIndices.push(idTercetoBI);
+    System.out.println("<caseWrapper> => <caseWrapper> CASE <comparison> OPEN_CURLY_BRACES <program> CLOSE_CURLY_BRACES");
+:};
+caseWrapper ::= CASE comparison OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES
+{:
+    int idComp = TercetoGenerator.pilaIndices.pop();
+    Terceto tercetoComp = TercetoGenerator.tercetos.get(idComp);
+    int idUltimoTerceto = TercetoGenerator.tercetos.size();
+    tercetoComp.segundoElemento = "[" + idUltimoTerceto + "]";
+    System.out.println("<caseWrapper> => CASE <comparison>");
+:};
+defaultCase ::= DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES
+{:
+    TercetoGenerator.getInstance().asignarTerceto("DefaultCaseIndex", "ProgramIndex");
+    System.out.println("<defaultCase> => DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES");
+:};
 
 iguales ::= IGUALES OPEN_BRACKET expression:exp
 {:
@@ -148,7 +393,7 @@ COMMA OPEN_SQUARE_BRACKET expressionList CLOSE_SQUARE_BRACKET CLOSE_BRACKET {:
   TercetoGenerator.pilaTercetos.pop().segundoElemento = "[" + id + "]";
     TercetoGenerator.getInstance().asignarTerceto("IgualesIndex","ExpressionListIndex");
 :};
-expressionList::= expression
+expressionList ::= expression
 {:
     int id = TercetoGenerator.getInstance().crearYAsignarTerceto("CMP",TercetoGenerator.getInstance().obtenerTercetoDelENT("Aux"),TercetoGenerator.getInstance().obtenerTercetoDelENT("ExpressionIndex"),"CMP");
     TercetoGenerator.getInstance().asignarTerceto("ExpressionListIndex", "ExpressionIndex");
@@ -157,7 +402,7 @@ expressionList::= expression
     TercetoGenerator.getInstance().apilarTerceto("BNE");
     System.out.println("<expressionList> ==> <expression>");
 :};
-expressionList::= expressionList COMMA expression:exp
+expressionList ::= expressionList COMMA expression:exp 
 {:
 
     int id = TercetoGenerator.getInstance().crearYAsignarTerceto("CMP",TercetoGenerator.getInstance().obtenerTercetoDelENT("Aux"),TercetoGenerator.getInstance().obtenerTercetoDelENT("ExpressionIndex"),"CMP");
@@ -172,11 +417,18 @@ expressionList::= expressionList COMMA expression:exp
     System.out.println("<expressionList> ==> <expressionList> COMMA <expression>");
 :};
 
-write ::= WRITE OPEN_BRACKET factor CLOSE_BRACKET {: System.out.println("<write> => WRITE OPEN_BRACKET <factor> CLOSE_BRACKET"); :};
-write ::= WRITE OPEN_BRACKET string CLOSE_BRACKET {: System.out.println("<write> => WRITE OPEN_BRACKET <string> CLOSE_BRACKET"); :};
+write ::= WRITE OPEN_BRACKET factor CLOSE_BRACKET
+{:
+    TercetoGenerator.getInstance().asignarTerceto("WriteIndex", "FactorIndex");
+    System.out.println("<write> => WRITE OPEN_BRACKET <factor> CLOSE_BRACKET");
+:};
+write ::= WRITE OPEN_BRACKET string CLOSE_BRACKET
+{:
+    TercetoGenerator.getInstance().asignarTerceto("WriteIndex", "StringIndex");
+    System.out.println("<write> => WRITE OPEN_BRACKET <string> CLOSE_BRACKET");
+:};
 read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET
 {:
-
     System.out.println("<read> => READ OPEN_BRACKET IDENTIFIER: " + id + " CLOSE_BRACKET");
 :};
 
