@@ -13,6 +13,10 @@ public class Terceto implements Serializable {
         this.tercerElemento = tercero;
     }
 
+    public Terceto(Object primero) {
+        this.primerElemento = primero;
+    }
+
     @Override
     public String toString() {
         String primerElemn = primerElemento == null ? "_" : primerElemento.toString();
