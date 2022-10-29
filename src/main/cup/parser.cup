@@ -2,6 +2,7 @@ package lyc.compiler;
 
 import java_cup.runtime.*;
 import lyc.compiler.files.*;
+import lyc.compiler.model.*;
 class Parser;
 
 
@@ -90,16 +91,58 @@ startRule ::= decVarSection {:
 :};
 decVarSection ::= INIT OPEN_CURLY_BRACES varFields CLOSE_CURLY_BRACES {: System.out.println("<decVarSection> => INIT OPEN_CURLY_BRACES <varFields> CLOSE_CURLY_BRACES"); :};
 decVarSection ::= INIT OPEN_CURLY_BRACES CLOSE_CURLY_BRACES {: System.out.println("<decVarSection> => INIT OPEN_CURLY_BRACES CLOSE_CURLY_BRACES"); :};
-varFields ::= varFields varList COLON dataType SEMI_COLON {: System.out.println("<varFields> => <varFields> <varList> COLON <dataType> SEMI_COLON"); :};
-varFields ::= varList COLON dataType SEMI_COLON {: System.out.println("<varFields> => <varList> COLON <dataType> SEMI_COLON"); :};
+varFields ::= varFields varList COLON dataType SEMI_COLON
+{:
+    System.out.println("<varFields> => <varFields> <varList> COLON <dataType> SEMI_COLON");
+    String dataType = TercetoGenerator.pilaTipoDato.pop();
+    SymbolTableGenerator symbolTableGenerator = new SymbolTableGenerator();
+    while(!TercetoGenerator.pilaVariables.isEmpty()){
+        String variable = TercetoGenerator.pilaVariables.pop();
+        symbolTableGenerator.updateDataType(variable,dataType);
+    }
+:};
+varFields ::= varList COLON dataType SEMI_COLON
+{:
+    System.out.println("<varFields> => <varList> COLON <dataType> SEMI_COLON");
+    String dataType = TercetoGenerator.pilaTipoDato.pop();
+    SymbolTableGenerator symbolTableGenerator = new SymbolTableGenerator();
+    while(!TercetoGenerator.pilaVariables.isEmpty()){
+        String variable = TercetoGenerator.pilaVariables.pop();
+        symbolTableGenerator.updateDataType(variable,dataType);
+    }
+:};
 varList ::= IDENTIFIER:id {:
+    SymbolTableGenerator stg = new SymbolTableGenerator();
+    if(!stg.isUninitialized(id.toString())) {
+        throw new AlreadyDeclaredVariableException("La variable: '" + id + "' ya fue declarada");
+    }
+    TercetoGenerator.pilaVariables.push(id.toString());
     TercetoGenerator.getInstance().crearYAsignarTerceto(id,"VarListIndex");
     System.out.println("<varList> => IDENTIFIER");
 :};
-varList ::= varList COMMA IDENTIFIER {: System.out.println("<varList> => <varList> COMMA IDENTIFIER"); :};
-dataType ::= INT:type | FLOAT:type | STRING:type
+varList ::= varList COMMA IDENTIFIER:id
 {:
-    System.out.println("<dataType> => INT | FLOAT | STRING");
+    SymbolTableGenerator stg = new SymbolTableGenerator();
+    if(!stg.isUninitialized(id.toString())) {
+        throw new AlreadyDeclaredVariableException("La variable: '" + id + "' ya fue declarada");
+    }
+    TercetoGenerator.pilaVariables.push(id.toString());
+    System.out.println("<varList> => <varList> COMMA IDENTIFIER");
+:};
+dataType ::= INT:type
+{:
+    TercetoGenerator.pilaTipoDato.push(type.toString());
+    System.out.println("<dataType> => INT");
+:}
+| FLOAT:type
+{:
+    TercetoGenerator.pilaTipoDato.push(type.toString());
+    System.out.println("<dataType> => FLOAT");
+:}
+| STRING:type
+{:
+    TercetoGenerator.pilaTipoDato.push(type.toString());
+    System.out.println("<dataType> => STRING");
 :};
 program ::= program sentence {: System.out.println("<program> => <program> <sentence>"); :};
 program ::= sentence
@@ -470,13 +513,27 @@ read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET
     System.out.println("<read> => READ OPEN_BRACKET IDENTIFIER: " + id + " CLOSE_BRACKET");
 :};
 
-assignment ::= IDENTIFIER:id ASSIG:asig expression
+assignment ::= IDENTIFIER:id ASSIG:asig {:TercetoGenerator.esAsignacion = true;:} expression
 {:
+    SymbolTableGenerator stg = new SymbolTableGenerator();
+    while(!TercetoGenerator.pilaOperandos.isEmpty()) {
+        String opName = TercetoGenerator.pilaOperandos.pop();
+        if(!stg.assertSameType(id.toString(),opName)) {
+            throw new IncompatibleTypeException("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
+            //System.out.println("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
+        }
+    }
+    TercetoGenerator.esAsignacion = false;
     TercetoGenerator.getInstance().crearYAsignarTerceto(asig,id,TercetoGenerator.getInstance().obtenerTercetoDelENT("ExpressionIndex"),"AssignmentIndex");
     System.out.println("<assignment> => IDENTIFIER ASSIG <expression>");
 :};
-assignment ::= IDENTIFIER:id ASSIG:asig string
+assignment ::= IDENTIFIER:id ASSIG:asig {:TercetoGenerator.esAsignacion = true;:} string
 {:
+    SymbolTableGenerator stg = new SymbolTableGenerator();
+    if(!stg.isString(id.toString())) {
+        throw new IncompatibleTypeException("No se puede castear variable " + id.toString() + " a tipo String ");
+    }
+    TercetoGenerator.esAsignacion = false;
     TercetoGenerator.getInstance().crearYAsignarTerceto(asig,id,TercetoGenerator.getInstance().obtenerTercetoDelENT("StringIndex"),"AssignmentIndex");
     System.out.println("<assignment> => IDENTIFIER ASSIG <string>");
 :};
@@ -512,17 +569,24 @@ term ::= factor
 :};
 factor ::= IDENTIFIER:id
 {:
+    if(TercetoGenerator.esAsignacion == true) {
+        TercetoGenerator.pilaOperandos.push(id.toString());
+    }
     TercetoGenerator.getInstance().crearYAsignarTerceto(id,"FactorIndex");
     System.out.println("<factor> => IDENTIFIER " + id);
 :};
 factor ::= INTEGER_CONSTANT:constant
 {:
+    if(TercetoGenerator.esAsignacion == true) {
+        TercetoGenerator.pilaOperandos.push("_" + constant.toString());
+    }
     TercetoGenerator.getInstance().crearYAsignarTerceto(constant,"FactorIndex");
     System.out.println("<factor> => INTEGER_CONSTANT " + constant );
 :};
 
 factor ::= FLOAT_CONSTANT:constant
 {:
+    TercetoGenerator.pilaOperandos.push("_" + constant.toString());
     TercetoGenerator.getInstance().crearYAsignarTerceto(constant,"FactorIndex");
     System.out.println("<factor> => FLOAT_CONSTANT" + constant );
 :};

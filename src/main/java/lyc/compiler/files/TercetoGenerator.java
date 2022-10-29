@@ -15,14 +15,29 @@ public class TercetoGenerator {
     public static Stack<Terceto> pilaTercetos = new Stack<Terceto>();
     public static Stack<Integer> pilaIndices = new Stack<Integer>();
     public static Stack<String> pilaOperadores = new Stack<String>();
+    public static Stack<String> pilaVariables = new Stack<String>();
+    public static Stack<String> pilaTipoDato = new Stack<String>();
+    public static Stack<String> pilaOperandos = new Stack<String>();
     public static List<Terceto> tercetos = new LinkedList<Terceto>();
     public static Map<String, Integer> indices = new HashMap<String, Integer>();
+    public static boolean esAsignacion = false;
     /*
     "ExpressionIndex" -> 2
     2 -> Terceto [a,b,c]
     * */
     private static TercetoGenerator instance;
 
+    public static void cleanUp() {
+        pilaTercetos = new Stack<Terceto>();
+        pilaIndices = new Stack<Integer>();
+        pilaOperadores = new Stack<String>();
+        pilaVariables = new Stack<String>();
+        pilaTipoDato = new Stack<String>();
+        pilaOperandos = new Stack<String>();
+        tercetos = new LinkedList<Terceto>();
+        indices = new HashMap<String, Integer>();
+        instance = null;
+    }
     public static TercetoGenerator getInstance() {
         if (instance == null) {
             instance = new TercetoGenerator();

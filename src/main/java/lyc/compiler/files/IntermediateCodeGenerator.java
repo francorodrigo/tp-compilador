@@ -21,15 +21,8 @@ public class IntermediateCodeGenerator implements FileGenerator {
     );
     @Override
     public void generate(FileWriter fileWriter) throws IOException {
-        fileWriter.write("_______LISTA ORIGINAL___________\n");
-        int x = 0;
-        for (Terceto t: TercetoGenerator.tercetos) {
-            fileWriter.write(x + ": " + t.toString());
-            x++;
-        }
-        fileWriter.write("_______LISTA OPTIMIZADA___________\n");
         this.crearListaFinalDeTercetos();
-        x = 0;
+        int x = 0;
         for (Terceto t: this.tercetosFinal) {
             try {
                 fileWriter.write(x + ": " + t.toString());
