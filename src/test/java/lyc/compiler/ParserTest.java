@@ -2,10 +2,12 @@ package lyc.compiler;
 
 import java_cup.runtime.Symbol;
 import lyc.compiler.factories.ParserFactory;
+import lyc.compiler.files.*;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class ParserTest {
+
+    @BeforeEach
+    public void resetParser() {
+        SymbolTableGenerator.cleanUp();
+        TercetoGenerator.cleanUp();
+    }
 
     @Test
     public void assignmentWithExpression() throws Exception {
@@ -86,8 +94,14 @@ public class ParserTest {
         compilationSuccessful(readFromFile("iguales.txt"));
     }
 
+    @Test
+    void invalidAssignment() throws Exception {
+        compilationError("init { a : Int; b : Float; } a = b;");
+    }
+
 
     private void compilationSuccessful(String input) throws Exception {
+        resetParser();
         assertThat(scan(input).sym).isEqualTo(ParserSym.EOF);
     }
 

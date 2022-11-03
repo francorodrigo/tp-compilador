@@ -1,9 +1,18 @@
 init {
     a, b : Int;
+    c : String;
 }
 if (a > b)
 {
     write("a es mas grande que b");
+    if (c == a)
+    {
+        a = 1;
+    }
+    else
+    {
+        a = 2;
+    }
 }
 else
 {

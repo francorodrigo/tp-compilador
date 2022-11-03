@@ -2,7 +2,7 @@ init {
     variable1 : Int;
     p1, p2, p3 : String;
     g : Float;
-    b : String;
+    h : String;
     a, b, c, w, d, e, f,i, var1: Int;
 }
 p1 = "PEPE";
@@ -12,12 +12,12 @@ c = d * ( e - 21 ) / 4;
 
 i = 10;
 c = 2;
-a = 99999.99;
-a = 99.;
-a = .9999;
+g = 99999.99;
+g = 99.;
+g = .9999;
 
-b = "@sdADaSjfla%dfg";
-b = "asldk  fh sjf";
+h = "@sdADaSjfla%dfg";
+h = "asldk  fh sjf";
 
 if ( a == b )
 {
@@ -63,7 +63,7 @@ do a {
 
 a = #Iguales ( a+w/b, [(d - 3) * 2,e,f] );
 
-if (👎 a > b)
+if (not a > b)
 {
     write("a no es mas grande que b");
 }
@@ -98,4 +98,5 @@ init {
     a : Int;
 }
 */
+
 

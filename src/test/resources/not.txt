@@ -6,3 +6,7 @@ if (👎 a > b)
 {
     write("a no es mas grande que b");
 }
+if (not a > b)
+{
+    write("a no es mas grande que b");
+}
