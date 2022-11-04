@@ -23,13 +23,13 @@ public class SymbolTableGenerator implements FileGenerator {
             TIPO_DATO.FLOAT, "FLOAT",
             TIPO_DATO.INT, "INT",
             TIPO_DATO.STRING, "STRING",
-            TIPO_DATO.EMPTY, ""
+            TIPO_DATO.EMPTY, "?"
     );
     public final static Map<String,TIPO_DATO> conversionDataTypeHelper = Map.of(
             "FLOAT", TIPO_DATO.FLOAT,
             "INT", TIPO_DATO.INT,
             "STRING", TIPO_DATO.STRING,
-            "", TIPO_DATO.EMPTY
+            "?", TIPO_DATO.EMPTY
     );
 
     public static void cleanUp() {
@@ -122,5 +122,17 @@ public class SymbolTableGenerator implements FileGenerator {
     public boolean isUninitialized(String name) {
         //System.out.println("Name: " + name + " existe?: " + symbolTable.containsKey(name) + " Tipo de dato: " + symbolTable.get(name).tipoDato);
         return symbolTable.containsKey(name) &&  symbolTable.get(name) != null && symbolTable.get(name).tipoDato == TIPO_DATO.EMPTY;
+    }
+
+    public List<String> getSymbolTableAsStringList() {
+        List<String> result = new ArrayList<String>(symbolTable.size());
+        for (Map.Entry<String,TableEntry> entry: symbolTable.entrySet()) {
+            String name = entry.getKey();
+            TableEntry tableEntry = entry.getValue();
+
+            result.add(String.format("%-30s",name)+" dd "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "?" : tableEntry.valor));
+
+        }
+        return result;
     }
 }

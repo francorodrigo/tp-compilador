@@ -84,7 +84,10 @@ non terminal comparisonCase;
 
 // Start Symbol Definition
 start with startRule;
-startRule ::= decVarSection program {: System.out.println("<startRule> => <devVarSection> <program>"); :};
+startRule ::= decVarSection program {:
+    TercetoGenerator.getInstance().asignarTerceto("StartRuleIndex","DecVarSectionIndex");
+    new AsmCodeGenerator().generarAsm();
+    System.out.println("<startRule> => <devVarSection> <program>"); :};
 startRule ::= decVarSection {:
     TercetoGenerator.getInstance().asignarTerceto("StartRuleIndex","DecVarSectionIndex");
     System.out.println("<startRule> => <devVarSection>");
