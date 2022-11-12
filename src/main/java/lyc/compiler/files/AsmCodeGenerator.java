@@ -2,9 +2,7 @@ package lyc.compiler.files;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import lyc.compiler.files.*;
 import java.util.*;
-import static lyc.compiler.constants.Constants.*;
 
 public class AsmCodeGenerator implements FileGenerator {
     //Aca se va a escribir todo el código asm que luego se volcará en generate()
@@ -41,7 +39,7 @@ public class AsmCodeGenerator implements FileGenerator {
     public void generarAsm() {
         new IntermediateCodeGenerator().crearListaFinalDeTercetos();
         this.escribirTablaDeVariables();
-        tagearSatlos();
+        this.tagearSaltos();
         this.escribirHeader();
         for(Terceto t: IntermediateCodeGenerator.tercetosFinal) {
             this.convertirTerceto(t);
@@ -49,7 +47,7 @@ public class AsmCodeGenerator implements FileGenerator {
         this.escribirFooter();
     }
 
-    private void tagearSatlos() {
+    private void tagearSaltos() {
         for(Terceto t: IntermediateCodeGenerator.tercetosFinal) {
             String op = t.primerElemento.toString();
             if(saltos.containsKey(op)) {
@@ -103,6 +101,12 @@ public class AsmCodeGenerator implements FileGenerator {
             case "BI":
                 this.convertirTercetoDeSalto(t);
                 break;
+            case "READ":
+                this.convertirTercetoDeLectura(t);
+                break;
+            case "WRITE":
+                this.convertirTercetoDeEscritura(t);
+                break;
             default:
                 System.out.println("NO SE RECONOCIO OPERADOR " + t.primerElemento.toString());
         }
@@ -153,6 +157,27 @@ public class AsmCodeGenerator implements FileGenerator {
         String idTerceto = tercetoObj.substring(1,tercetoObj.length()-1);
         Integer id = Integer.valueOf(idTerceto);
         buffer.add(saltos.get(t.primerElemento.toString()) + " " + this.idTercetoATag.get(id));
+    }
+
+    private void convertirTercetoDeLectura(Terceto t) { // read(var) // @TODO revisar
+
+        buffer.add("LEA bx, "+ t.segundoElemento.toString());
+
+    }
+    private void convertirTercetoDeEscritura(Terceto t) { // write("cte_string") write(varNumerica) // @TODO revisar
+
+        /* PRINT STRINGS */
+
+        //SymbolTableGenerator stg = new SymbolTableGenerator();        //if(stg.isString(t.segundoElemento.toString())) { }
+
+        buffer.add("MOV dx, OFFSET "+ t.segundoElemento); // ==> buffer.add("LEA dx "+ t.segundoElemento.toString());
+        buffer.add("MOV ah, 9"); // rutina para imprimir por pantalla strings
+        buffer.add("INT 21h"); // interrumpe y envía una cadena de caracteres al dispositivo estándar de salida
+        // Para salto de linea
+        buffer.add("ifnb 1");
+        buffer.add("MOV cx, 1");
+        buffer.add("endif");
+
     }
 
     private void escribirTablaDeVariables() {
