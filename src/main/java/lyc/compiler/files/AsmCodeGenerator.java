@@ -26,25 +26,38 @@ public class AsmCodeGenerator implements FileGenerator {
             "BGE", "JAE",
             "BEQ", "JE",
             "BNE", "JNE",
-            "BI", "JI"
+            "BI", "JMP"
     );
     @Override
     public void generate(FileWriter fileWriter) throws IOException {
         for(String str: buffer) {
             fileWriter.write(str + "\n");
         }
-        fileWriter.write("TODO");
     }
 
     public void generarAsm() {
         new IntermediateCodeGenerator().crearListaFinalDeTercetos();
+        this.escribirHeader();
         this.escribirTablaDeVariables();
         this.tagearSaltos();
-        this.escribirHeader();
+        this.escribirHeaderCodigo();
+        int x = 0;
         for(Terceto t: IntermediateCodeGenerator.tercetosFinal) {
+            if(idTercetoATag.containsKey(x)) {
+                this.buffer.add(idTercetoATag.get(x) + ":");
+            }
             this.convertirTerceto(t);
+            x++;
         }
         this.escribirFooter();
+    }
+
+    private void escribirHeader() {
+        buffer.add("include number.asm");
+        buffer.add("include macros2.asm");
+        buffer.add(".MODEL LARGE");
+        buffer.add(".386");
+        buffer.add(".STACK 200h");
     }
 
     private void tagearSaltos() {
@@ -147,7 +160,22 @@ public class AsmCodeGenerator implements FileGenerator {
 
     private void convertirTercetoDeComparacion(Terceto t) {
         buffer.add("FLD " + t.segundoElemento);
-        buffer.add("FCOMP " + t.tercerElemento);
+        if(
+                t.tercerElemento.toString().charAt(0) == '0' ||
+                t.tercerElemento.toString().charAt(0) == '1' ||
+                t.tercerElemento.toString().charAt(0) == '2' ||
+                t.tercerElemento.toString().charAt(0) == '3' ||
+                t.tercerElemento.toString().charAt(0) == '4' ||
+                t.tercerElemento.toString().charAt(0) == '5' ||
+                t.tercerElemento.toString().charAt(0) == '6' ||
+                t.tercerElemento.toString().charAt(0) == '7' ||
+                t.tercerElemento.toString().charAt(0) == '8' ||
+                t.tercerElemento.toString().charAt(0) == '9'
+        ) {
+            buffer.add("FCOMP _" + t.tercerElemento);
+        } else {
+            buffer.add("FCOMP " + t.tercerElemento);
+        }
         buffer.add("FSTSW ax");
         buffer.add("SAHF");
     }
@@ -161,22 +189,24 @@ public class AsmCodeGenerator implements FileGenerator {
 
     private void convertirTercetoDeLectura(Terceto t) { // read(var) // @TODO revisar
 
-        buffer.add("LEA bx, "+ t.segundoElemento.toString());
+        SymbolTableGenerator stg = new SymbolTableGenerator();
+        if(stg.isString(t.segundoElemento.toString())) {
+            buffer.add("getString "+ t.segundoElemento.toString());
+        } else {
+            buffer.add("GetFloat " + t.segundoElemento.toString());
+        }
 
     }
     private void convertirTercetoDeEscritura(Terceto t) { // write("cte_string") write(varNumerica) // @TODO revisar
 
         /* PRINT STRINGS */
+        SymbolTableGenerator stg = new SymbolTableGenerator();
+        if(stg.isString(t.segundoElemento.toString())) {
+            buffer.add("displayString "+ t.segundoElemento.toString());
+        } else {
+            buffer.add("DisplayFloat " + t.segundoElemento.toString() + ", 2");
+        }
 
-        //SymbolTableGenerator stg = new SymbolTableGenerator();        //if(stg.isString(t.segundoElemento.toString())) { }
-
-        buffer.add("MOV dx, OFFSET "+ t.segundoElemento); // ==> buffer.add("LEA dx "+ t.segundoElemento.toString());
-        buffer.add("MOV ah, 9"); // rutina para imprimir por pantalla strings
-        buffer.add("INT 21h"); // interrumpe y envía una cadena de caracteres al dispositivo estándar de salida
-        // Para salto de linea
-        buffer.add("ifnb 1");
-        buffer.add("MOV cx, 1");
-        buffer.add("endif");
 
     }
 
@@ -194,7 +224,7 @@ public class AsmCodeGenerator implements FileGenerator {
         buffer.add(String.format("%-30s","@Cont")+" dd "+ String.format("%-40s","?"));
     }
 
-    private void escribirHeader() {
+    private void escribirHeaderCodigo() {
         buffer.add(".CODE");
         buffer.add("MOV ax,@DATA");
         buffer.add("MOV ds,ax");

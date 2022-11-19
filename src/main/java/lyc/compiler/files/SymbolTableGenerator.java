@@ -129,8 +129,13 @@ public class SymbolTableGenerator implements FileGenerator {
         for (Map.Entry<String,TableEntry> entry: symbolTable.entrySet()) {
             String name = entry.getKey();
             TableEntry tableEntry = entry.getValue();
-
-            result.add(String.format("%-30s",name)+" dd "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "?" : tableEntry.valor));
+            if(this.isString(name)) {
+                result.add(String.format("%-30s",name)+" db "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "?" : "'" + tableEntry.valor + "',0"));
+            } else if(this.isInteger(name)) {
+                result.add(String.format("%-30s",name)+" dd "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "?" : tableEntry.valor + ".0"));
+            } else {
+                result.add(String.format("%-30s",name)+" dd "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "?" : tableEntry.valor));
+            }
 
         }
         return result;

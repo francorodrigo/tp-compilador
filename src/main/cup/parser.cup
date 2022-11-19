@@ -522,8 +522,8 @@ assignment ::= IDENTIFIER:id ASSIG:asig {:TercetoGenerator.esAsignacion = true;:
     while(!TercetoGenerator.pilaOperandos.isEmpty()) {
         String opName = TercetoGenerator.pilaOperandos.pop();
         if(!stg.assertSameType(id.toString(),opName)) {
-            throw new IncompatibleTypeException("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
             //System.out.println("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
+            throw new IncompatibleTypeException("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
         }
     }
     TercetoGenerator.esAsignacion = false;
@@ -581,7 +581,7 @@ factor ::= IDENTIFIER:id
 factor ::= INTEGER_CONSTANT:constant
 {:
     if(TercetoGenerator.esAsignacion == true) {
-        TercetoGenerator.pilaOperandos.push("_" + constant.toString());
+        TercetoGenerator.pilaOperandos.push(constant.toString());
     }
     TercetoGenerator.getInstance().crearYAsignarTerceto(constant,"FactorIndex");
     System.out.println("<factor> => INTEGER_CONSTANT " + constant );
@@ -589,7 +589,7 @@ factor ::= INTEGER_CONSTANT:constant
 
 factor ::= FLOAT_CONSTANT:constant
 {:
-    TercetoGenerator.pilaOperandos.push("_" + constant.toString());
+    TercetoGenerator.pilaOperandos.push(constant.toString());
     TercetoGenerator.getInstance().crearYAsignarTerceto(constant,"FactorIndex");
     System.out.println("<factor> => FLOAT_CONSTANT" + constant );
 :};
@@ -605,6 +605,6 @@ factor ::= iguales
 :};
 string ::= CONST_STRING:constant
 {:
-    TercetoGenerator.getInstance().crearYAsignarTerceto(constant, "StringIndex");
+    TercetoGenerator.getInstance().crearYAsignarTerceto(constant.toString().replace(' ', '_'), "StringIndex");
     System.out.println("<string> => CONST_STRING " + constant);
 :};

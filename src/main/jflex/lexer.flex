@@ -201,19 +201,19 @@ FloatConstant = -?{Digit}*("." {Digit}+) | -?{Digit}+ ("." {Digit}*)
                                                   validateIntegerLength();
                                                   System.out.println("Constante Entera: " + yytext());
                                                   new SymbolTableGenerator().addToSymbolTable("_"+yytext(),TIPO_DATO.INT,yytext(),"");
-                                                  return symbol(ParserSym.INTEGER_CONSTANT, yytext());
+                                                  return symbol(ParserSym.INTEGER_CONSTANT, "_"+yytext());
                                               }
   {ConstString}                             {
                                                 validateStringLength();
                                                 System.out.println("Constante String: " + yytext());
-                                                new SymbolTableGenerator().addToSymbolTable("_"+yytext().replace("\"",""),TIPO_DATO.STRING,yytext().replace("\"",""),String.valueOf(yytext().length() - 2));
-                                                return symbol(ParserSym.CONST_STRING, yytext());
+                                                new SymbolTableGenerator().addToSymbolTable("_@"+yytext().replace("\"","").replace(' ','_'),TIPO_DATO.STRING,yytext().replace("\"",""),String.valueOf(yytext().length() - 2));
+                                                return symbol(ParserSym.CONST_STRING, "_@"+yytext().replace("\"","").replace(' ','_'));
                                             }
   {FloatConstant}                           {
                                                 validateFloatLength();
                                                 System.out.println("Constante Flotante: " + yytext());
-                                                new SymbolTableGenerator().addToSymbolTable("_"+yytext(),TIPO_DATO.FLOAT,yytext(),"");
-                                                return symbol(ParserSym.FLOAT_CONSTANT, yytext());
+                                                new SymbolTableGenerator().addToSymbolTable("_"+yytext().replace('.','_'),TIPO_DATO.FLOAT,yytext(),"");
+                                                return symbol(ParserSym.FLOAT_CONSTANT, "_"+yytext().replace('.','_'));
                                             }
 
   /* whitespace */
