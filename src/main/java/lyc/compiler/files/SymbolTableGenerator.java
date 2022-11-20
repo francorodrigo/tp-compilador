@@ -115,6 +115,14 @@ public class SymbolTableGenerator implements FileGenerator {
         return symbolTable.containsKey(name1) && symbolTable.containsKey(name2)
                 && symbolTable.get(name1).tipoDato.equals(symbolTable.get(name2).tipoDato);
     }
+    public TIPO_DATO getTipoDato(String name) {
+        TableEntry entry = symbolTable.get(name);
+        if(entry == null) {
+            System.out.println("NO SE ENCONTRO: " + name + " en STG");
+            return TIPO_DATO.EMPTY;
+        }
+        return entry.tipoDato;
+    }
     public boolean assertExists(String name) {
         TableEntry entry = symbolTable.get(name);
         return (entry != null && entry.tipoDato != TIPO_DATO.EMPTY);
@@ -130,7 +138,7 @@ public class SymbolTableGenerator implements FileGenerator {
             String name = entry.getKey();
             TableEntry tableEntry = entry.getValue();
             if(this.isString(name)) {
-                result.add(String.format("%-30s",name)+" db "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "?" : "'" + tableEntry.valor + "',0"));
+                result.add(String.format("%-30s",name)+" db "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "30 dup(?), '$'" : "'" + tableEntry.valor + "',0"));
             } else if(this.isInteger(name)) {
                 result.add(String.format("%-30s",name)+" dd "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "?" : tableEntry.valor + ".0"));
             } else {

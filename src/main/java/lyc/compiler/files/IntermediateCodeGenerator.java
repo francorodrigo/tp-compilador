@@ -84,10 +84,13 @@ public class IntermediateCodeGenerator implements FileGenerator {
         Terceto tAux = new Terceto("=");
         String nombreVarAux = "@Aux" + tercetosFinal.size();
         tAux.segundoElemento = nombreVarAux;
-
+        TIPO_DATO tipoDato = TIPO_DATO.EMPTY;
+        SymbolTableGenerator stg = new SymbolTableGenerator();
         if(this.esOperacion(t)) {
             //Es una operacion [+,algo,otracosa]
             tAux.tercerElemento = t.segundoElemento.toString();
+            System.out.println("SE OBTIENE EL TIPO DE DATO DE " + t.segundoElemento.toString());
+            tipoDato = stg.getTipoDato(t.segundoElemento.toString());
         } else {
             //Es la declaracion de una var [a,_,_].
             if(esOperacionNoDestructiva) {
@@ -103,11 +106,12 @@ public class IntermediateCodeGenerator implements FileGenerator {
                 return t.primerElemento;
             }
             tAux.tercerElemento = t.primerElemento.toString();
+            tipoDato = stg.getTipoDato(t.primerElemento.toString());
         }
         System.out.println("Aniadiendo: " + tAux);
         tercetosFinal.add(tAux);
         try {
-            new SymbolTableGenerator().addToSymbolTable(nombreVarAux, TIPO_DATO.EMPTY, "", "");
+            new SymbolTableGenerator().addToSymbolTable(nombreVarAux, tipoDato, "", "");
         } catch (AlreadyDeclaredVariableException e) {
 
         }
@@ -146,6 +150,8 @@ public class IntermediateCodeGenerator implements FileGenerator {
         }
         if(t.segundoElemento.toString().charAt(0) == '_' && t.tercerElemento.toString().charAt(0) == '_') {
             //Al desreferenciar, quedaron suma de constantes. Hay que agregar un terceto auxiliar con el resultado de la suma
+            System.out.println("TERCETOS DESREFERENCIADOS: " + t.segundoElemento.toString() + " , " + t.tercerElemento.toString());
+            String varOriginal = t.segundoElemento.toString();
             String nombreVarAux = "@Aux" + tercetosFinal.size();
             String nombreVarRes = "@Aux" + ( tercetosFinal.size() + 2 );
             //Si tenemos [+,_2,_3] -> [=,@aux1,_2]; [+,@aux1,3]; [=,@auxres,@aux1]
@@ -160,8 +166,8 @@ public class IntermediateCodeGenerator implements FileGenerator {
             tercetosFinal.add(tAux2);
             try {
                 SymbolTableGenerator stg = new SymbolTableGenerator();
-                stg.addToSymbolTable(nombreVarRes, TIPO_DATO.EMPTY, "", "");
-                stg.addToSymbolTable(nombreVarAux, TIPO_DATO.EMPTY, "", "");
+                stg.addToSymbolTable(nombreVarRes, stg.getTipoDato(varOriginal), "", "");
+                stg.addToSymbolTable(nombreVarAux, stg.getTipoDato(varOriginal),  "", "");
             } catch (AlreadyDeclaredVariableException e) {
 
             }

@@ -55,6 +55,7 @@ public class AsmCodeGenerator implements FileGenerator {
     private void escribirHeader() {
         buffer.add("include number.asm");
         buffer.add("include macros2.asm");
+        buffer.add("include macros.asm");
         buffer.add(".MODEL LARGE");
         buffer.add(".386");
         buffer.add(".STACK 200h");
@@ -70,6 +71,7 @@ public class AsmCodeGenerator implements FileGenerator {
                 this.idTercetoATag.put(id,"tag_aux" + id);
             }
         }
+        this.idTercetoATag.put(IntermediateCodeGenerator.tercetosFinal.size(),"tag_end");
     }
 
     private void convertirTerceto(Terceto t) {
@@ -126,8 +128,19 @@ public class AsmCodeGenerator implements FileGenerator {
     }
 
     private void convertirTercetoDeAsignacion(Terceto t) {
-        buffer.add("MOV eax, " + t.tercerElemento.toString());
-        buffer.add("MOV " + t.segundoElemento.toString() + ", eax");
+        SymbolTableGenerator stg = new SymbolTableGenerator();
+        /*
+        [=,@aux0,_a_es_mas]
+        [=,p1,@aux0]
+         */
+        if(stg.isString(t.tercerElemento.toString()) || stg.isString(t.segundoElemento.toString()) ){
+            buffer.add("MOV SI, OFFSET " + t.tercerElemento.toString());
+            buffer.add("MOV DI, OFFSET " + t.segundoElemento.toString());
+            buffer.add("STRCPY");
+        } else {
+            buffer.add("MOV eax, " + t.tercerElemento.toString());
+            buffer.add("MOV " + t.segundoElemento.toString() + ", eax");
+        }
     }
 
     private void convertirTercetoDeSuma(Terceto t) {
@@ -206,7 +219,7 @@ public class AsmCodeGenerator implements FileGenerator {
         } else {
             buffer.add("DisplayFloat " + t.segundoElemento.toString() + ", 2");
         }
-
+        buffer.add("newLine 1");
 
     }
 
@@ -226,14 +239,16 @@ public class AsmCodeGenerator implements FileGenerator {
 
     private void escribirHeaderCodigo() {
         buffer.add(".CODE");
+        buffer.add ("START:");
         buffer.add("MOV ax,@DATA");
         buffer.add("MOV ds,ax");
         buffer.add("MOV es,ax");
     }
 
     private void escribirFooter() {
+        buffer.add("tag_end:");
         buffer.add("MOV ax,4c00h");
         buffer.add("Int 21h");
-        buffer.add("End");
+        buffer.add("END START");
     }
 }

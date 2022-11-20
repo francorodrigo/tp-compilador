@@ -16,12 +16,23 @@ g = 99999.99;
 g = 99.;
 g = .9999;
 
+a = 30;
+b = 2;
+
 h = "@sdADaSjfla%dfg";
 h = "asldk  fh sjf";
 
-if ( a == b )
-{
-    a = 1;
+
+while (i > 0) {
+
+    while (a > b)
+    {
+        write("a es mas grande que b");
+        a = a - 1;
+    }
+
+    i = ( i - 1 );
+
 }
 
 if ( (a > b)  &&  (c > b) )
@@ -34,6 +45,7 @@ if ( (a > b)  &&  (c > b) )
 
 do a {
     case a == b {
+        write("SOY CASE");
         a = 1;
     }
     case b > c {
@@ -71,18 +83,6 @@ if (not a > b)
 if (a > b || c > b)
 {
     write("a es mas que b o c mas que b");
-}
-
-while (i > 0) {
-
-    while (a > b)
-    {
-        write("a es mas grande que b");
-        a = a + 1;
-    }
-
-    i = ( i - 1 );
-
 }
 
 read(a);

@@ -206,7 +206,7 @@ FloatConstant = -?{Digit}*("." {Digit}+) | -?{Digit}+ ("." {Digit}*)
   {ConstString}                             {
                                                 validateStringLength();
                                                 System.out.println("Constante String: " + yytext());
-                                                new SymbolTableGenerator().addToSymbolTable("_@"+yytext().replace("\"","").replace(' ','_'),TIPO_DATO.STRING,yytext().replace("\"",""),String.valueOf(yytext().length() - 2));
+                                                new SymbolTableGenerator().addToSymbolTable("_@"+yytext().replace("\"","").replace(' ','_'),TIPO_DATO.STRING,yytext().replace("\"","") + "$",String.valueOf(yytext().length() - 2));
                                                 return symbol(ParserSym.CONST_STRING, "_@"+yytext().replace("\"","").replace(' ','_'));
                                             }
   {FloatConstant}                           {
