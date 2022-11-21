@@ -173,18 +173,8 @@ public class AsmCodeGenerator implements FileGenerator {
 
     private void convertirTercetoDeComparacion(Terceto t) {
         buffer.add("FLD " + t.segundoElemento);
-        if(
-                t.tercerElemento.toString().charAt(0) == '0' ||
-                t.tercerElemento.toString().charAt(0) == '1' ||
-                t.tercerElemento.toString().charAt(0) == '2' ||
-                t.tercerElemento.toString().charAt(0) == '3' ||
-                t.tercerElemento.toString().charAt(0) == '4' ||
-                t.tercerElemento.toString().charAt(0) == '5' ||
-                t.tercerElemento.toString().charAt(0) == '6' ||
-                t.tercerElemento.toString().charAt(0) == '7' ||
-                t.tercerElemento.toString().charAt(0) == '8' ||
-                t.tercerElemento.toString().charAt(0) == '9'
-        ) {
+        String numbers = "0123456789";
+        if(numbers.contains("" + t.tercerElemento.toString().charAt(0))) {
             buffer.add("FCOMP _" + t.tercerElemento);
         } else {
             buffer.add("FCOMP " + t.tercerElemento);

@@ -6,7 +6,7 @@ import lyc.compiler.files.SymbolTableGenerator;import lyc.compiler.model.*;
 import javax.xml.transform.stream.StreamSource;
 import static lyc.compiler.constants.Constants.*;
 import lyc.compiler.files.SymbolTableGenerator.*;
-
+import java.nio.charset.StandardCharsets;import java.util.zip.CRC32;
 %%
 
 %public
@@ -204,11 +204,15 @@ FloatConstant = -?{Digit}*("." {Digit}+) | -?{Digit}+ ("." {Digit}*)
                                                   return symbol(ParserSym.INTEGER_CONSTANT, "_"+yytext());
                                               }
   {ConstString}                             {
-                                                validateStringLength();
-                                                System.out.println("Constante String: " + yytext());
-                                                new SymbolTableGenerator().addToSymbolTable("_@"+yytext().replace("\"","").replace(' ','_'),TIPO_DATO.STRING,yytext().replace("\"","") + "$",String.valueOf(yytext().length() - 2));
-                                                return symbol(ParserSym.CONST_STRING, "_@"+yytext().replace("\"","").replace(' ','_'));
-                                            }
+                                                  validateStringLength();
+                                                  System.out.println("Constante String: " + yytext());
+                                                  String name = "_@"+yytext().replace("\"","").replace(' ','_');
+                                                  CRC32 crc = new CRC32();
+                                                  crc.update(name.getBytes(StandardCharsets.UTF_8));
+                                                  name = "_@" + String.valueOf(crc.getValue());
+                                                  new SymbolTableGenerator().addToSymbolTable(name,TIPO_DATO.STRING,yytext().replace("\"","") + "$",String.valueOf(yytext().length() - 2));
+                                                  return symbol(ParserSym.CONST_STRING, name);
+                                              }
   {FloatConstant}                           {
                                                 validateFloatLength();
                                                 System.out.println("Constante Flotante: " + yytext());

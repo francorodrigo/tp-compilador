@@ -111,9 +111,17 @@ public class SymbolTableGenerator implements FileGenerator {
     public boolean isType(String name, String type) {
         return symbolTable.containsKey(name) && symbolTable.get(name).tipoDato == conversionDataTypeHelper.get(type.toUpperCase());
     }
-    public boolean assertSameType(String name1, String name2) {
-        return symbolTable.containsKey(name1) && symbolTable.containsKey(name2)
-                && symbolTable.get(name1).tipoDato.equals(symbolTable.get(name2).tipoDato);
+    public boolean assertSameType(String name1, String name2) throws UndeclaredVariableException {
+        TableEntry entry1 = symbolTable.get(name1);
+        if(entry1 == null || entry1.tipoDato == TIPO_DATO.EMPTY) {
+            throw new UndeclaredVariableException("La variable " + name1 + " no fue declarada");
+        }
+        TableEntry entry2 = symbolTable.get(name2);
+
+        if(entry2 == null || entry2.tipoDato == TIPO_DATO.EMPTY) {
+            throw new UndeclaredVariableException("La variable " + name2 + " no fue declarada");
+        }
+        return  symbolTable.get(name1).tipoDato.equals(symbolTable.get(name2).tipoDato);
     }
     public TIPO_DATO getTipoDato(String name) {
         TableEntry entry = symbolTable.get(name);
