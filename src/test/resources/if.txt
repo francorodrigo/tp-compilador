@@ -5,7 +5,7 @@ init {
 if (a > b)
 {
     write("a es mas grande que b");
-    if (c == a)
+    if (b == a)
     {
         a = 1;
     }

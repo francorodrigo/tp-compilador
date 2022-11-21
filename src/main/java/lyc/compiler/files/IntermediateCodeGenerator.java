@@ -4,9 +4,11 @@ import javax.lang.model.type.NullType;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import lyc.compiler.model.*;
+import static lyc.compiler.constants.Constants.*;
 
 public class IntermediateCodeGenerator implements FileGenerator {
-    private List<Terceto> tercetosFinal = new ArrayList<Terceto>(TercetoGenerator.tercetos.size()*2);
+    public static List<Terceto> tercetosFinal = new ArrayList<Terceto>(TercetoGenerator.tercetos.size()*2);
     private Map<Integer,List<Terceto>> pendientesDeOffset = new HashMap<Integer,List<Terceto>>();
     private int variablesAgregadas = 0;
     private int indiceDeTercetoActual = 0;
@@ -21,9 +23,11 @@ public class IntermediateCodeGenerator implements FileGenerator {
     );
     @Override
     public void generate(FileWriter fileWriter) throws IOException {
-        this.crearListaFinalDeTercetos();
+        if (this.tercetosFinal.size() == 0) {
+            this.crearListaFinalDeTercetos();
+        }
         int x = 0;
-        for (Terceto t: this.tercetosFinal) {
+        for (Terceto t: tercetosFinal) {
             try {
                 fileWriter.write(x + ": " + t.toString());
                 x++;
@@ -78,12 +82,15 @@ public class IntermediateCodeGenerator implements FileGenerator {
         }
 
         Terceto tAux = new Terceto("=");
-        String nombreVarAux = "@Aux" + this.tercetosFinal.size();
+        String nombreVarAux = "@Aux" + tercetosFinal.size();
         tAux.segundoElemento = nombreVarAux;
-
+        TIPO_DATO tipoDato = TIPO_DATO.EMPTY;
+        SymbolTableGenerator stg = new SymbolTableGenerator();
         if(this.esOperacion(t)) {
             //Es una operacion [+,algo,otracosa]
             tAux.tercerElemento = t.segundoElemento.toString();
+            System.out.println("SE OBTIENE EL TIPO DE DATO DE " + t.segundoElemento.toString());
+            tipoDato = stg.getTipoDato(t.segundoElemento.toString());
         } else {
             //Es la declaracion de una var [a,_,_].
             if(esOperacionNoDestructiva) {
@@ -99,9 +106,15 @@ public class IntermediateCodeGenerator implements FileGenerator {
                 return t.primerElemento;
             }
             tAux.tercerElemento = t.primerElemento.toString();
+            tipoDato = stg.getTipoDato(t.primerElemento.toString());
         }
         System.out.println("Aniadiendo: " + tAux);
-        this.tercetosFinal.add(tAux);
+        tercetosFinal.add(tAux);
+        try {
+            new SymbolTableGenerator().addToSymbolTable(nombreVarAux, tipoDato, "", "");
+        } catch (AlreadyDeclaredVariableException e) {
+
+        }
         this.variablesAgregadas++;
         return nombreVarAux;
     }
@@ -137,8 +150,10 @@ public class IntermediateCodeGenerator implements FileGenerator {
         }
         if(t.segundoElemento.toString().charAt(0) == '_' && t.tercerElemento.toString().charAt(0) == '_') {
             //Al desreferenciar, quedaron suma de constantes. Hay que agregar un terceto auxiliar con el resultado de la suma
-            String nombreVarAux = "@Aux" + this.tercetosFinal.size();
-            String nombreVarRes = "@Aux" + ( this.tercetosFinal.size() + 2 );
+            System.out.println("TERCETOS DESREFERENCIADOS: " + t.segundoElemento.toString() + " , " + t.tercerElemento.toString());
+            String varOriginal = t.segundoElemento.toString();
+            String nombreVarAux = "@Aux" + tercetosFinal.size();
+            String nombreVarRes = "@Aux" + ( tercetosFinal.size() + 2 );
             //Si tenemos [+,_2,_3] -> [=,@aux1,_2]; [+,@aux1,3]; [=,@auxres,@aux1]
             Terceto tAux = new Terceto("=",nombreVarAux,t.segundoElemento);
             Terceto tAux2 = new Terceto(t.primerElemento,nombreVarAux,t.tercerElemento);
@@ -147,14 +162,21 @@ public class IntermediateCodeGenerator implements FileGenerator {
             t.segundoElemento = nombreVarRes;
             t.tercerElemento = nombreVarAux;
             this.variablesAgregadas+=2;
-            this.tercetosFinal.add(tAux);
-            this.tercetosFinal.add(tAux2);
+            tercetosFinal.add(tAux);
+            tercetosFinal.add(tAux2);
+            try {
+                SymbolTableGenerator stg = new SymbolTableGenerator();
+                stg.addToSymbolTable(nombreVarRes, stg.getTipoDato(varOriginal), "", "");
+                stg.addToSymbolTable(nombreVarAux, stg.getTipoDato(varOriginal),  "", "");
+            } catch (AlreadyDeclaredVariableException e) {
+
+            }
         }
         return t;
     }
 
 
-    private void crearListaFinalDeTercetos() {
+    public void crearListaFinalDeTercetos() {
         this.llenarListaDeSaltos();
         for (Terceto t: TercetoGenerator.tercetos) {
             System.out.println("Procesando terceto: " + indiceDeTercetoActual + ". " + t);
@@ -166,7 +188,7 @@ public class IntermediateCodeGenerator implements FileGenerator {
                 this.variablesAgregadas--;
             } else {
                 Terceto t2 = this.desreferenciarTerceto(t);
-                this.tercetosFinal.add(t2);
+                tercetosFinal.add(t2);
             }
             this.indiceDeTercetoActual++;
         }

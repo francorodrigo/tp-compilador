@@ -2,7 +2,7 @@ init {
     variable1 : Int;
     p1, p2, p3 : String;
     g : Float;
-    b : String;
+    h : String;
     a, b, c, w, d, e, f,i, var1: Int;
 }
 p1 = "PEPE";
@@ -12,16 +12,27 @@ c = d * ( e - 21 ) / 4;
 
 i = 10;
 c = 2;
-a = 99999.99;
-a = 99.;
-a = .9999;
+g = 99999.99;
+g = 99.;
+g = .9999;
 
-b = "@sdADaSjfla%dfg";
-b = "asldk  fh sjf";
+a = 30;
+b = 2;
 
-if ( a == b )
-{
-    a = 1;
+h = "@sdADaSjfla%dfg";
+h = "asldk  fh sjf";
+
+
+while (i > 0) {
+
+    while (a > b)
+    {
+        write("a es mas grande que b");
+        a = a - 1;
+    }
+
+    i = ( i - 1 );
+
 }
 
 if ( (a > b)  &&  (c > b) )
@@ -34,6 +45,7 @@ if ( (a > b)  &&  (c > b) )
 
 do a {
     case a == b {
+        write("SOY CASE");
         a = 1;
     }
     case b > c {
@@ -73,18 +85,6 @@ if (a > b || c > b)
     write("a es mas que b o c mas que b");
 }
 
-while (i > 0) {
-
-    while (a > b)
-    {
-        write("a es mas grande que b");
-        a = a + 1;
-    }
-
-    i = ( i - 1 );
-
-}
-
 read(a);
 
 write("ewr");  /* “ewr” es una cte string */
@@ -98,4 +98,5 @@ init {
     a : Int;
 }
 */
+
 

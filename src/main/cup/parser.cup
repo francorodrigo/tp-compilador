@@ -84,7 +84,10 @@ non terminal comparisonCase;
 
 // Start Symbol Definition
 start with startRule;
-startRule ::= decVarSection program {: System.out.println("<startRule> => <devVarSection> <program>"); :};
+startRule ::= decVarSection program {:
+    TercetoGenerator.getInstance().asignarTerceto("StartRuleIndex","DecVarSectionIndex");
+    new AsmCodeGenerator().generarAsm();
+    System.out.println("<startRule> => <devVarSection> <program>"); :};
 startRule ::= decVarSection {:
     TercetoGenerator.getInstance().asignarTerceto("StartRuleIndex","DecVarSectionIndex");
     System.out.println("<startRule> => <devVarSection>");
@@ -189,7 +192,7 @@ iteration ::= WHILE OPEN_BRACKET
 conditional CLOSE_BRACKET OPEN_CURLY_BRACES
 {:
     //Agregamos un branch al final del programa si la condicion fallo.
-    TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","1");
+    TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","_1");
     int idSalto = TercetoGenerator.getInstance().crearTerceto("BNE","_","_"); //No es 1, fallo la condicion del while
     TercetoGenerator.pilaIndices.push(idSalto);
 :}
@@ -210,7 +213,7 @@ program
 
 ifHeader ::= IF OPEN_BRACKET conditional
 {:
-    TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","1");
+    TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","_1");
     int idx = TercetoGenerator.getInstance().crearTerceto("BNE","_","_");
     TercetoGenerator.pilaIndices.push(idx);
 :};
@@ -257,13 +260,13 @@ conditional ::= NOT comparison {:
     [=, @BoolAux, 0] 5
     [blablabla] 6
     */
-    int idxComp = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","1"); // 1
+    int idxComp = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","_1"); // 1
     int idxAux = idxComp + 4; //5
     TercetoGenerator.getInstance().crearTerceto("BEQ","[" + idxAux + "]","0"); // 2
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1"); // 3
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_1"); // 3
     idxAux++;
     TercetoGenerator.getInstance().crearTerceto("BI","[" + idxAux + "]","0"); // 4
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","0"); // 5
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_0"); // 5
 
     //TercetoGenerator.getInstance().crearYAsignarTerceto("NOT", TercetoGenerator.getInstance().obtenerTercetoDelENT("ComparisonIndex"),"_","ConditionalIndex");
     System.out.println("NOT <conditional> ==> comparison");
@@ -284,14 +287,14 @@ conditional ::= conditional
     [=,@BoolAux,0] 6 ; Alguno no era 1, el resultado es 0.
     [bla bla bla] 7
     */
-    int idxCompIzq = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAuxTemp","1");
+    int idxCompIzq = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAuxTemp","_1");
     int idxAux = idxCompIzq + 5;
     TercetoGenerator.getInstance().crearTerceto("BNE","[" + idxAux + "]","_");
-    TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","1");
+    TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","_1");
     TercetoGenerator.getInstance().crearTerceto("BNE","[" + idxAux + "]","_");
     idxAux++;
     TercetoGenerator.getInstance().crearTerceto("BI","[" + idxAux + "]" , "_");
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","0");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_0");
     System.out.println("<conditional> ==> <conditional> AND <comparison>");
 :};
 
@@ -312,7 +315,7 @@ conditional ::= conditional
     [bla bla bla] 7
     */
     //Si boolAux es 1, dejarlo en 1
-    int id1 = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","1");
+    int id1 = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAux","_1");
 
     int idSaltoSiguienteCondicion = TercetoGenerator.tercetos.size()+2;
     TercetoGenerator.getInstance().crearTerceto("BNE","["+idSaltoSiguienteCondicion+"]","_");//Si no es uno, saltar a la comparación de boolAuxTemp
@@ -322,63 +325,99 @@ conditional ::= conditional
     TercetoGenerator.getInstance().crearTerceto("BI","[" + idSaltoFinalComparacion + "]","_"); //Si ya era uno, el OR es verdadero y salimos
 
     //Si no valia 1, comparamos BoolAuxTemp, que es el BoolAux de la expresion a izquierda del OR.
-    int id2 = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAuxTemp","1");
+    int id2 = TercetoGenerator.getInstance().crearTerceto("CMP","@BoolAuxTemp","_1");
 
     idSaltoFinalComparacion = TercetoGenerator.tercetos.size()+2;
     TercetoGenerator.getInstance().crearTerceto("BNE","[" + idSaltoFinalComparacion + "]","_"); //Si NO era 1, ninguno era 1, y salimos.
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_1");
     System.out.println("<conditional> ==> <conditional> OR <comparison>");
 :};
 comparisonCase ::= expression {:TercetoGenerator.getInstance().apilarIndiceDeTerceto("ExpressionIndex");:} comparator:value expression
 {:
+    SymbolTableGenerator stg = new SymbolTableGenerator();
+    String opName1 = TercetoGenerator.pilaOperandos.pop();
+    while(!TercetoGenerator.pilaOperandos.isEmpty()) {
+        String opName2 = TercetoGenerator.pilaOperandos.pop();
+        if(!stg.assertSameType(opName1,opName2)) {
+            //System.out.println("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
+            throw new IncompatibleTypeException("No se puede castear variable: '" + opName1 + "' a " + opName2.replace("_","") + " en asignacion");
+        }
+    }
     int idExpression2 = TercetoGenerator.indices.get("ExpressionIndex");
     int idExpression1 = TercetoGenerator.pilaIndices.pop();
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","0");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_0");
     TercetoGenerator.getInstance().crearYAsignarTerceto("CMP","[" + idExpression1 + "]", "[" + idExpression2 + "]", "ComparisonIndex"); //[CMP, [1], [2]]
     String op = TercetoGenerator.pilaOperadores.pop(); // "<"
     int idComp = TercetoGenerator.getInstance().crearTerceto(TercetoGenerator.operadores.get(op),"_","_"); //[BGE,_,_]
     TercetoGenerator.pilaIndices.push(idComp);
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_1");
     System.out.println("<comparison> ==> <expression> <comparator> <expression>");
 :};
 //IF A > B
 comparisonCase ::= OPEN_BRACKET expression{:TercetoGenerator.getInstance().apilarIndiceDeTerceto("ExpressionIndex");:} comparator expression CLOSE_BRACKET
 {:
+    SymbolTableGenerator stg = new SymbolTableGenerator();
+    String opName1 = TercetoGenerator.pilaOperandos.pop();
+    while(!TercetoGenerator.pilaOperandos.isEmpty()) {
+        String opName2 = TercetoGenerator.pilaOperandos.pop();
+        if(!stg.assertSameType(opName1,opName2)) {
+            //System.out.println("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
+            throw new IncompatibleTypeException("No se puede castear variable: '" + opName1 + "' a " + opName2.replace("_","") + " en asignacion");
+        }
+    }
     int idExpression2 = TercetoGenerator.indices.get("ExpressionIndex");
     int idExpression1 = TercetoGenerator.pilaIndices.pop();
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","0");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_0");
     TercetoGenerator.getInstance().crearYAsignarTerceto("CMP","[" + idExpression1 + "]", "[" + idExpression2 + "]", "ComparisonIndex"); //[CMP, [1], [2]]
     String op = TercetoGenerator.pilaOperadores.pop(); // "<"
     int idComp = TercetoGenerator.getInstance().crearTerceto(TercetoGenerator.operadores.get(op),"_","_"); //[BGE,_,_]
     TercetoGenerator.pilaIndices.push(idComp);
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_1");
     System.out.println("<comparison> ==> OPEN_BRACKET <expression> <comparator> <expression> CLOSE_BRACKET");
 :};
 
 
 comparison ::= expression {: TercetoGenerator.getInstance().apilarIndiceDeTerceto("ExpressionIndex"); :} comparator:value expression
 {:
+    SymbolTableGenerator stg = new SymbolTableGenerator();
+    String opName1 = TercetoGenerator.pilaOperandos.pop();
+    while(!TercetoGenerator.pilaOperandos.isEmpty()) {
+        String opName2 = TercetoGenerator.pilaOperandos.pop();
+        if(!stg.assertSameType(opName1,opName2)) {
+            //System.out.println("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
+            throw new IncompatibleTypeException("No se puede castear variable: '" + opName1 + "' a " + opName2.replace("_","") + " en asignacion");
+        }
+    }
     int idExpression2 = TercetoGenerator.indices.get("ExpressionIndex");
     int idExpression1 = TercetoGenerator.pilaIndices.pop();
-    int idAux = TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","0");
+    int idAux = TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_0");
     TercetoGenerator.getInstance().crearYAsignarTerceto("CMP","[" + idExpression1 + "]", "[" + idExpression2 + "]", "ComparisonIndex"); //[CMP, [1], [2]]
     idAux+=4;
     String op = TercetoGenerator.pilaOperadores.pop(); // "<"
     int idComp = TercetoGenerator.getInstance().crearTerceto(TercetoGenerator.operadores.get(op),"[" + idAux + "]","_"); //BGE
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_1");
     System.out.println("<comparison> ==> <expression> <comparator> <expression>");
 :};
 
 comparison ::= OPEN_BRACKET expression {: TercetoGenerator.getInstance().apilarIndiceDeTerceto("ExpressionIndex"); :} comparator expression CLOSE_BRACKET
 {:
+    SymbolTableGenerator stg = new SymbolTableGenerator();
+    String opName1 = TercetoGenerator.pilaOperandos.pop();
+    while(!TercetoGenerator.pilaOperandos.isEmpty()) {
+        String opName2 = TercetoGenerator.pilaOperandos.pop();
+        if(!stg.assertSameType(opName1,opName2)) {
+            //System.out.println("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
+            throw new IncompatibleTypeException("No se puede castear variable: '" + opName1 + "' a " + opName2.replace("_","") + " en asignacion");
+        }
+    }
     int idExpression2 = TercetoGenerator.indices.get("ExpressionIndex");
     int idExpression1 = TercetoGenerator.pilaIndices.pop();
-    int idAux = TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","0");
+    int idAux = TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_0");
     TercetoGenerator.getInstance().crearYAsignarTerceto("CMP","[" + idExpression1 + "]", "[" + idExpression2 + "]", "ComparisonIndex"); //[CMP, [1], [2]]
     idAux+=4;
     String op = TercetoGenerator.pilaOperadores.pop(); // "<"
     int idComp = TercetoGenerator.getInstance().crearTerceto(TercetoGenerator.operadores.get(op),"[" + idAux + "]","_");
-    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","1");
+    TercetoGenerator.getInstance().crearTerceto("=","@BoolAux","_1");
     System.out.println("<comparison> ==> OPEN_BRACKET <expression> <comparator> <expression> CLOSE_BRACKET");
 :};
 
@@ -423,8 +462,6 @@ case ::= DO IDENTIFIER OPEN_CURLY_BRACES caseWrapper CLOSE_CURLY_BRACES
 :};
 case ::= DO IDENTIFIER OPEN_CURLY_BRACES caseWrapper defaultCase CLOSE_CURLY_BRACES
 {:
-    // FIXME: ¿Por que estamos haciendo que el final de todos los case salten a la primera linea del Default??
-    //  deberian saltar a la ultima linea actual creo, sino al final de cada case siempre se va a ejecutar el defaultcase
     int idDefaultCase = TercetoGenerator.indices.get("DefaultCaseIndex"); //deberia ser TercetoGenerator.tercetos.size()?
     while(!TercetoGenerator.pilaIndices.isEmpty()) {
         Terceto tercetoBI = TercetoGenerator.tercetos.get(TercetoGenerator.pilaIndices.pop());
@@ -458,25 +495,34 @@ defaultCase ::= DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES
     System.out.println("<defaultCase> => DEFAULT OPEN_CURLY_BRACES program CLOSE_CURLY_BRACES");
 :};
 
-iguales ::= IGUALES OPEN_BRACKET expression:exp
+iguales ::= IGUALES OPEN_BRACKET {:TercetoGenerator.pilaOperandos.clear();:} expression:exp
 {:
     TercetoGenerator.getInstance().crearYAsignarTerceto("=","@aux",TercetoGenerator.getInstance().obtenerTercetoDelENT("ExpressionIndex"),"Aux");
     TercetoGenerator.getInstance().apilarTerceto("Aux");
     System.out.println("Valor a comparar: " + exp);
 :}
 COMMA OPEN_SQUARE_BRACKET expressionList CLOSE_SQUARE_BRACKET CLOSE_BRACKET {:
+    SymbolTableGenerator stg = new SymbolTableGenerator();
+    String opName1 = TercetoGenerator.pilaOperandos.pop();
+    while(!TercetoGenerator.pilaOperandos.isEmpty()) {
+        String opName2 = TercetoGenerator.pilaOperandos.pop();
+        if(!stg.assertSameType(opName1,opName2)) {
+            //System.out.println("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
+            throw new IncompatibleTypeException("No se puede castear variable: '" + opName1 + "' a " + opName2.replace("_","") + " en asignacion");
+        }
+    }
   System.out.println("<iguales> => IGUALES OPEN_BRACKET <expression> COMMA OPEN_SQUARE_BRACKET <expressionList> CLOSE_SQUARE_BRACKET CLOSE_BRACKET");
   int id = TercetoGenerator.indices.get("BNE");
   id+=2;
   TercetoGenerator.pilaTercetos.pop().segundoElemento = "[" + id + "]";
-    TercetoGenerator.getInstance().asignarTerceto("IgualesIndex","AuxContIndex");
+  TercetoGenerator.getInstance().asignarTerceto("IgualesIndex","AuxContIndex");
 :};
 expressionList ::= expression
 {:
     int id = TercetoGenerator.getInstance().crearYAsignarTerceto("CMP",TercetoGenerator.getInstance().obtenerTercetoDelENT("Aux"),TercetoGenerator.getInstance().obtenerTercetoDelENT("ExpressionIndex"),"CMP");
     TercetoGenerator.getInstance().asignarTerceto("ExpressionListIndex", "ExpressionIndex");
     TercetoGenerator.getInstance().crearYAsignarTerceto("BNE","","_","BNE");
-    TercetoGenerator.getInstance().crearYAsignarTerceto("+","@Cont","1","AuxContIndex");
+    TercetoGenerator.getInstance().crearYAsignarTerceto("+","@Cont","_1","AuxContIndex");
     TercetoGenerator.getInstance().apilarTerceto("BNE");
     System.out.println("<expressionList> ==> <expression>");
 :};
@@ -490,7 +536,7 @@ expressionList ::= expressionList COMMA expression:exp
         TercetoGenerator.pilaTercetos.pop().segundoElemento = "[" + id + "]";
     }
     TercetoGenerator.getInstance().crearYAsignarTerceto("BNE","","_","BNE");
-    TercetoGenerator.getInstance().crearYAsignarTerceto("+","@Cont","1","AuxContIndex");
+    TercetoGenerator.getInstance().crearYAsignarTerceto("+","@Cont","_1","AuxContIndex");
     TercetoGenerator.getInstance().apilarTerceto("BNE");
     System.out.println("<expressionList> ==> <expressionList> COMMA <expression>");
 :};
@@ -513,21 +559,21 @@ read ::= READ OPEN_BRACKET IDENTIFIER:id CLOSE_BRACKET
     System.out.println("<read> => READ OPEN_BRACKET IDENTIFIER: " + id + " CLOSE_BRACKET");
 :};
 
-assignment ::= IDENTIFIER:id ASSIG:asig {:TercetoGenerator.esAsignacion = true;:} expression
+assignment ::= IDENTIFIER:id ASSIG:asig {:TercetoGenerator.esAsignacion = true; TercetoGenerator.pilaOperandos.clear(); :} expression
 {:
     SymbolTableGenerator stg = new SymbolTableGenerator();
     while(!TercetoGenerator.pilaOperandos.isEmpty()) {
         String opName = TercetoGenerator.pilaOperandos.pop();
         if(!stg.assertSameType(id.toString(),opName)) {
-            throw new IncompatibleTypeException("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
             //System.out.println("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
+            throw new IncompatibleTypeException("No se puede castear variable: '" + id.toString() + "' a " + opName.replace("_","") + " en asignacion");
         }
     }
     TercetoGenerator.esAsignacion = false;
     TercetoGenerator.getInstance().crearYAsignarTerceto(asig,id,TercetoGenerator.getInstance().obtenerTercetoDelENT("ExpressionIndex"),"AssignmentIndex");
     System.out.println("<assignment> => IDENTIFIER ASSIG <expression>");
 :};
-assignment ::= IDENTIFIER:id ASSIG:asig {:TercetoGenerator.esAsignacion = true;:} string
+assignment ::= IDENTIFIER:id ASSIG:asig {:TercetoGenerator.esAsignacion = true; TercetoGenerator.pilaOperandos.clear();:} string
 {:
     SymbolTableGenerator stg = new SymbolTableGenerator();
     if(!stg.isString(id.toString())) {
@@ -569,24 +615,20 @@ term ::= factor
 :};
 factor ::= IDENTIFIER:id
 {:
-    if(TercetoGenerator.esAsignacion == true) {
-        TercetoGenerator.pilaOperandos.push(id.toString());
-    }
+    TercetoGenerator.pilaOperandos.push(id.toString());
     TercetoGenerator.getInstance().crearYAsignarTerceto(id,"FactorIndex");
     System.out.println("<factor> => IDENTIFIER " + id);
 :};
 factor ::= INTEGER_CONSTANT:constant
 {:
-    if(TercetoGenerator.esAsignacion == true) {
-        TercetoGenerator.pilaOperandos.push("_" + constant.toString());
-    }
+    TercetoGenerator.pilaOperandos.push(constant.toString());
     TercetoGenerator.getInstance().crearYAsignarTerceto(constant,"FactorIndex");
     System.out.println("<factor> => INTEGER_CONSTANT " + constant );
 :};
 
 factor ::= FLOAT_CONSTANT:constant
 {:
-    TercetoGenerator.pilaOperandos.push("_" + constant.toString());
+    TercetoGenerator.pilaOperandos.push(constant.toString());
     TercetoGenerator.getInstance().crearYAsignarTerceto(constant,"FactorIndex");
     System.out.println("<factor> => FLOAT_CONSTANT" + constant );
 :};
@@ -602,6 +644,6 @@ factor ::= iguales
 :};
 string ::= CONST_STRING:constant
 {:
-    TercetoGenerator.getInstance().crearYAsignarTerceto(constant, "StringIndex");
+    TercetoGenerator.getInstance().crearYAsignarTerceto(constant.toString().replace(' ', '_'), "StringIndex");
     System.out.println("<string> => CONST_STRING " + constant);
 :};

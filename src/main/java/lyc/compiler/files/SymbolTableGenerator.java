@@ -23,13 +23,13 @@ public class SymbolTableGenerator implements FileGenerator {
             TIPO_DATO.FLOAT, "FLOAT",
             TIPO_DATO.INT, "INT",
             TIPO_DATO.STRING, "STRING",
-            TIPO_DATO.EMPTY, ""
+            TIPO_DATO.EMPTY, "?"
     );
     public final static Map<String,TIPO_DATO> conversionDataTypeHelper = Map.of(
             "FLOAT", TIPO_DATO.FLOAT,
             "INT", TIPO_DATO.INT,
             "STRING", TIPO_DATO.STRING,
-            "", TIPO_DATO.EMPTY
+            "?", TIPO_DATO.EMPTY
     );
 
     public static void cleanUp() {
@@ -111,9 +111,25 @@ public class SymbolTableGenerator implements FileGenerator {
     public boolean isType(String name, String type) {
         return symbolTable.containsKey(name) && symbolTable.get(name).tipoDato == conversionDataTypeHelper.get(type.toUpperCase());
     }
-    public boolean assertSameType(String name1, String name2) {
-        return symbolTable.containsKey(name1) && symbolTable.containsKey(name2)
-                && symbolTable.get(name1).tipoDato.equals(symbolTable.get(name2).tipoDato);
+    public boolean assertSameType(String name1, String name2) throws UndeclaredVariableException {
+        TableEntry entry1 = symbolTable.get(name1);
+        if(entry1 == null || entry1.tipoDato == TIPO_DATO.EMPTY) {
+            throw new UndeclaredVariableException("La variable " + name1 + " no fue declarada");
+        }
+        TableEntry entry2 = symbolTable.get(name2);
+
+        if(entry2 == null || entry2.tipoDato == TIPO_DATO.EMPTY) {
+            throw new UndeclaredVariableException("La variable " + name2 + " no fue declarada");
+        }
+        return  symbolTable.get(name1).tipoDato.equals(symbolTable.get(name2).tipoDato);
+    }
+    public TIPO_DATO getTipoDato(String name) {
+        TableEntry entry = symbolTable.get(name);
+        if(entry == null) {
+            System.out.println("NO SE ENCONTRO: " + name + " en STG");
+            return TIPO_DATO.EMPTY;
+        }
+        return entry.tipoDato;
     }
     public boolean assertExists(String name) {
         TableEntry entry = symbolTable.get(name);
@@ -122,5 +138,22 @@ public class SymbolTableGenerator implements FileGenerator {
     public boolean isUninitialized(String name) {
         //System.out.println("Name: " + name + " existe?: " + symbolTable.containsKey(name) + " Tipo de dato: " + symbolTable.get(name).tipoDato);
         return symbolTable.containsKey(name) &&  symbolTable.get(name) != null && symbolTable.get(name).tipoDato == TIPO_DATO.EMPTY;
+    }
+
+    public List<String> getSymbolTableAsStringList() {
+        List<String> result = new ArrayList<String>(symbolTable.size());
+        for (Map.Entry<String,TableEntry> entry: symbolTable.entrySet()) {
+            String name = entry.getKey();
+            TableEntry tableEntry = entry.getValue();
+            if(this.isString(name)) {
+                result.add(String.format("%-30s",name)+" db "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "30 dup(?), '$'" : "'" + tableEntry.valor + "',0"));
+            } else if(this.isInteger(name)) {
+                result.add(String.format("%-30s",name)+" dd "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "?" : tableEntry.valor + ".0"));
+            } else {
+                result.add(String.format("%-30s",name)+" dd "+ String.format("%-40s",tableEntry.valor.length() == 0 ? "?" : tableEntry.valor));
+            }
+
+        }
+        return result;
     }
 }
